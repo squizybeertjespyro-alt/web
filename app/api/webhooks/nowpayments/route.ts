@@ -4,14 +4,18 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    // NOWPayments sends payment status here
+    const status = body.payment_status;
+    const orderId = body.order_id;
+
     console.log("NOWPayments webhook:", body);
 
-    const status = body.payment_status;
-
     if (status === "finished") {
-      // here you later unlock order / send email / give product
-      console.log("PAYMENT COMPLETED:", body.order_id);
+      console.log("PAYMENT SUCCESS:", orderId);
+
+      // later we connect:
+      // - database order update
+      // - email send
+      // - product delivery
     }
 
     return NextResponse.json({ ok: true });
