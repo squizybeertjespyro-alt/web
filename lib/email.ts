@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 import { siteConfig } from "@/config/site";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY ?? "placeholder");
 
 interface OrderItem {
   productName: string;
