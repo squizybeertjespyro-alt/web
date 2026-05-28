@@ -12,7 +12,7 @@ export function ProductCard({ game }: ProductCardProps) {
   return (
     <Link
       href={`/product-category/${game.slug}`}
-      className="group relative block overflow-hidden rounded-xl border border-purple-500/20 bg-[#12001f]/60 backdrop-blur-md transition-all duration-300 hover:scale-[1.03] hover:border-purple-500/60 hover:shadow-[0_0_25px_rgba(168,85,247,0.4)]"
+      className="cyber-card group relative block overflow-hidden"
     >
       <div className="relative aspect-square overflow-hidden">
         <Image

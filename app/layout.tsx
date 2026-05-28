@@ -5,6 +5,7 @@ import { siteConfig } from '@/config/site'
 import { CartProvider } from '@/context/cart-context'
 import { AuthProvider } from '@/context/auth-context'
 import './globals.css'
+import "./cyber.css"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
