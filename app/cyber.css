@@ -34,3 +34,21 @@ body {
   transform: scale(1.05);
   box-shadow: 0 0 20px rgba(160, 0, 255, 0.6);
 }
+@keyframes bgMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.cyber-bg {
+  background: linear-gradient(
+    -45deg,
+    #0a0014,
+    #1a0033,
+    #4b0082,
+    #7a1fff,
+    #000
+  );
+  background-size: 400% 400%;
+  animation: bgMove 12s ease infinite;
+}
