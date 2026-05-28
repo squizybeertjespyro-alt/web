@@ -10,10 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { siteConfig } from "@/config/site";
 import Link from "next/link";
-import { ShoppingBag, CreditCard, Bitcoin, Lock } from "lucide-react";
+import { ShoppingBag, Bitcoin, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
-
-type PayMethod = "stripe" | "crypto";
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
@@ -21,7 +19,6 @@ export default function CheckoutPage() {
   const router = useRouter();
 
   const [email, setEmail] = useState(user?.email ?? "");
-  const [payMethod, setPayMethod] = useState<PayMethod>("stripe");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -45,31 +42,16 @@ export default function CheckoutPage() {
 
     setLoading(true);
     try {
-      if (payMethod === "stripe") {
-        const res = await fetch("/api/checkout/stripe", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ items, email }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
+      const res = await fetch("/api/checkout/crypto", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items, email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
 
-        // Store clientSecret + orderId for the payment page
-        sessionStorage.setItem("stripe_client_secret", data.clientSecret);
-        sessionStorage.setItem("pending_order_id", data.orderId);
-        router.push("/checkout/payment");
-      } else {
-        const res = await fetch("/api/checkout/crypto", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ items, email }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
-
-        clearCart();
-        window.location.href = data.hostedUrl;
-      }
+      clearCart();
+      window.location.href = data.hostedUrl;
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Checkout failed. Please try again.");
     } finally {
@@ -84,7 +66,6 @@ export default function CheckoutPage() {
         <h1 className="mb-8 text-2xl font-bold">Checkout</h1>
 
         <div className="grid gap-8 lg:grid-cols-3">
-          {/* Left: form */}
           <div className="space-y-8 lg:col-span-2">
 
             {/* Email */}
@@ -113,49 +94,19 @@ export default function CheckoutPage() {
               )}
             </div>
 
-            {/* Payment method */}
+            {/* Payment */}
             <div className="rounded-xl border border-border bg-card p-6">
-              <h2 className="mb-4 text-base font-semibold">Payment Method</h2>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => setPayMethod("stripe")}
-                  className={`flex items-center gap-3 rounded-lg border p-4 text-left transition-colors ${
-                    payMethod === "stripe"
-                      ? "border-primary bg-primary/10"
-                      : "border-border hover:border-primary/50"
-                  }`}
-                >
-                  <CreditCard className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="text-sm font-medium">Card</p>
-                    <p className="text-xs text-muted-foreground">Visa, Mastercard</p>
-                  </div>
-                </button>
-                <button
-                  onClick={() => setPayMethod("crypto")}
-                  className={`flex items-center gap-3 rounded-lg border p-4 text-left transition-colors ${
-                    payMethod === "crypto"
-                      ? "border-primary bg-primary/10"
-                      : "border-border hover:border-primary/50"
-                  }`}
-                >
-                  <Bitcoin className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="text-sm font-medium">Crypto</p>
-                    <p className="text-xs text-muted-foreground">BTC, ETH, USDC…</p>
-                  </div>
-                </button>
+              <h2 className="mb-4 text-base font-semibold">Payment</h2>
+              <div className="flex items-center gap-3 rounded-lg border border-primary bg-primary/10 p-4">
+                <Bitcoin className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="text-sm font-medium">Crypto</p>
+                  <p className="text-xs text-muted-foreground">BTC, ETH, USDT, LTC and more via NOWPayments</p>
+                </div>
               </div>
-              {payMethod === "crypto" && (
-                <p className="mt-3 text-xs text-muted-foreground">
-                  You'll be redirected to Coinbase Commerce to complete payment securely.
-                </p>
-              )}
-              {payMethod === "stripe" && (
-                <p className="mt-3 text-xs text-muted-foreground">
-                  You'll enter your card details on the next screen. Payments secured by Stripe.
-                </p>
-              )}
+              <p className="mt-3 text-xs text-muted-foreground">
+                You'll be redirected to NOWPayments to complete your payment securely.
+              </p>
             </div>
 
             {error && (
@@ -164,22 +115,13 @@ export default function CheckoutPage() {
               </div>
             )}
 
-            <Button
-              onClick={handleCheckout}
-              disabled={loading}
-              size="lg"
-              className="w-full"
-            >
+            <Button onClick={handleCheckout} disabled={loading} size="lg" className="w-full">
               <Lock className="mr-2 h-4 w-4" />
-              {loading
-                ? "Processing…"
-                : payMethod === "crypto"
-                ? `Pay with Crypto — ${siteConfig.currency}${total.toFixed(2)}`
-                : `Continue to Payment — ${siteConfig.currency}${total.toFixed(2)}`}
+              {loading ? "Processing…" : `Pay with Crypto — ${siteConfig.currency}${total.toFixed(2)}`}
             </Button>
           </div>
 
-          {/* Right: summary */}
+          {/* Summary */}
           <div className="h-fit rounded-xl border border-border bg-card p-6">
             <h2 className="mb-4 text-base font-semibold">Order Summary</h2>
             <div className="space-y-3">
