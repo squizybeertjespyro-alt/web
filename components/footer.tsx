@@ -1,11 +1,6 @@
 import Link from "next/link";
 import { siteConfig } from "@/config/site";
 
-// ============================================
-// Footer uses settings from config/site.ts
-// Edit that file to change name and socials!
-// ============================================
-
 export function Footer() {
   return (
     <footer className="mt-auto border-t border-border bg-card/50">
@@ -27,16 +22,16 @@ export function Footer() {
               Quick Links
             </h4>
             <ul className="space-y-2">
-              {["Home", "Shop"].map((link) => (
-                <li key={link}>
-                  <Link
-                    href={link === "Home" ? "/" : `/${link.toLowerCase()}`}
-                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {link}
-                  </Link>
-                </li>
-              ))}
+              <li>
+                <Link href="/" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link href="/shop" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+                  Shop
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -46,22 +41,25 @@ export function Footer() {
               Support
             </h4>
             <ul className="space-y-2">
-              {["FAQ", "Contact", "Terms of Service", "Privacy Policy"].map(
-                (link) => (
-                  <li key={link}>
-                    <Link
-                      href="#"
-                      className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                      {link}
-                    </Link>
-                  </li>
-                )
-              )}
+              <li>
+                <Link href="/tos" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <a
+                  href={siteConfig.socials.discord}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Contact us on Discord
+                </a>
+              </li>
             </ul>
           </div>
 
-          {/* Social - Uses links from config/site.ts */}
+          {/* Community */}
           <div>
             <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-foreground">
               Community
@@ -112,7 +110,8 @@ export function Footer() {
 
         <div className="mt-12 border-t border-border pt-8 text-center">
           <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
+            &copy; {new Date().getFullYear()} {siteConfig.name}. All rights reserved. &nbsp;·&nbsp;
+            <Link href="/tos" className="hover:text-foreground transition-colors">Terms of Service</Link>
           </p>
         </div>
       </div>
