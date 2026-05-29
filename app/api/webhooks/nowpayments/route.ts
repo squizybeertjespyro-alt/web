@@ -8,10 +8,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.text();
-    console.log("Webhook body:", body);
-
     const sig = req.headers.get("x-nowpayments-sig");
-    console.log("Webhook signature:", sig);
 
     if (sig && process.env.NOWPAYMENTS_IPN_SECRET) {
       const hmac = crypto
@@ -19,14 +16,10 @@ export async function POST(req: NextRequest) {
         .update(body)
         .digest("hex");
 
-      console.log("Expected signature:", hmac);
-
       if (hmac !== sig) {
-        console.error("❌ Invalid NOWPayments signature");
+        console.error("❌ Invalid signature");
         return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
       }
-    } else {
-      console.log("⚠️ No signature or IPN secret, skipping verification");
     }
 
     const data = JSON.parse(body);
@@ -35,16 +28,71 @@ export async function POST(req: NextRequest) {
     console.log("Payment status:", payment_status, "Order ID:", order_id);
 
     if (payment_status === "finished" || payment_status === "confirmed") {
-      console.log("✅ Payment finished, updating order...");
-
-      const order = await prisma.order.update({
+      const order = await prisma.order.findUnique({
         where: { id: order_id },
-        data: { status: "paid" },
         include: { items: true, user: true },
       });
 
+      if (!order) {
+        console.error("Order not found:", order_id);
+        return NextResponse.json({ ok: true });
+      }
+
+      // Assign license keys to each order item
+      const assignedKeys: { productName: string; optionName: string; keys: string[] }[] = [];
+
+      for (const item of order.items) {
+        const keys: string[] = [];
+
+        for (let i = 0; i < item.quantity; i++) {
+          // Find next available key for this product + option
+          const licenseKey = await prisma.licenseKey.findFirst({
+            where: {
+              productId: item.productId,
+              optionName: item.optionName,
+              used: false,
+            },
+          });
+
+          if (licenseKey) {
+            // Mark key as used and link to order item
+            await prisma.licenseKey.update({
+              where: { id: licenseKey.id },
+              data: {
+                used: true,
+                usedAt: new Date(),
+                orderItemId: item.id,
+              },
+            });
+            keys.push(licenseKey.key);
+            console.log(`✅ Assigned key for ${item.productName} (${item.optionName})`);
+          } else {
+            console.error(`❌ No keys available for ${item.productName} (${item.optionName})`);
+            keys.push("NO KEY AVAILABLE - Contact support on Discord");
+          }
+        }
+
+        assignedKeys.push({
+          productName: item.productName,
+          optionName: item.optionName,
+          keys,
+        });
+      }
+
+      // Build product content for email
+      const productContent = assignedKeys
+        .map((p) =>
+          `${p.productName} — ${p.optionName}:\n${p.keys.join("\n")}`
+        )
+        .join("\n\n");
+
+      // Update order status
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { status: "paid" },
+      });
+
       const customerEmail = order.guestEmail ?? order.user?.email;
-      console.log("Customer email:", customerEmail);
 
       if (!order.emailSent && customerEmail) {
         try {
@@ -53,7 +101,7 @@ export async function POST(req: NextRequest) {
             orderId: order.id,
             items: order.items,
             total: order.total,
-            productContent: "Thank you for your order! Join our Discord to receive your product.",
+            productContent,
           });
           await prisma.order.update({
             where: { id: order.id },

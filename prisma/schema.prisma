@@ -29,28 +29,41 @@ model Session {
 }
 
 model Order {
-  id              String      @id @default(cuid())
-  userId          String?
-  guestEmail      String?
-  status          String      @default("pending") // pending | paid | failed | refunded
-  paymentMethod   String      // stripe | crypto
-  paymentId       String?     // Stripe payment intent ID or Coinbase charge ID
-  total           Float
-  currency        String      @default("USD")
-  emailSent       Boolean     @default(false)
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  user            User?       @relation(fields: [userId], references: [id])
-  items           OrderItem[]
+  id            String      @id @default(cuid())
+  userId        String?
+  guestEmail    String?
+  status        String      @default("pending")
+  paymentMethod String
+  paymentId     String?
+  total         Float
+  currency      String      @default("USD")
+  emailSent     Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  user          User?       @relation(fields: [userId], references: [id])
+  items         OrderItem[]
 }
 
 model OrderItem {
-  id          String  @id @default(cuid())
+  id          String       @id @default(cuid())
   orderId     String
   productId   String
   productName String
   optionName  String
   quantity    Int
   price       Float
-  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order       Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  licenseKeys LicenseKey[]
+}
+
+model LicenseKey {
+  id          String     @id @default(cuid())
+  productId   String     // matches product id in config/products.ts
+  optionName  String     // e.g. "1 Month", "Lifetime"
+  key         String     @unique
+  used        Boolean    @default(false)
+  usedAt      DateTime?
+  orderItemId String?
+  createdAt   DateTime   @default(now())
+  orderItem   OrderItem? @relation(fields: [orderItemId], references: [id])
 }
