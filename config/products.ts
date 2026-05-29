@@ -46,7 +46,7 @@ export const products: Product[] = [
     status: "Undetected",
     onSale: true,
     options: [
-      { name: "Standard", price: 35.00, salePrice: 1, inStock: true },
+      { name: "Standard", price: 35.00, salePrice: 25.00, inStock: true },
       { name: "Premium", price: 55.00, salePrice: 45.00, inStock: true },
       { name: "Standard > Premium Upgrade", price: 25.00, salePrice: 20.00, inStock: true },
     ],
