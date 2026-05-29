@@ -135,10 +135,7 @@ export default function TermsPage() {
                 <span className="font-semibold text-white">Site Publisher</span>
                 <p className="mt-1">HardDuckMarket<br />Website: hardduckmarket.xyz<br />Contact: via Discord</p>
               </div>
-              <div>
-                <span className="font-semibold text-white">Hosting Provider</span>
-                <p className="mt-1">Vercel Inc.<br />340 Pine Street, Suite 701, San Francisco, CA 94104, USA<br />Website: vercel.com</p>
-              </div>
+              
               <div>
                 <span className="font-semibold text-white">Intellectual Property</span>
                 <p className="mt-1">All elements making up the hardduckmarket.xyz website are the exclusive property of HardDuckMarket and are protected by applicable intellectual property laws. Any reproduction or modification without prior written authorization is prohibited.</p>
