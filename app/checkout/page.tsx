@@ -68,7 +68,7 @@ export default function CheckoutPage() {
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="space-y-8 lg:col-span-2">
 
-            {/* Email */}
+            {/* Email+1 */}
             <div className="rounded-xl border border-border bg-card p-6">
               <h2 className="mb-4 text-base font-semibold">Contact</h2>
               {user ? (
