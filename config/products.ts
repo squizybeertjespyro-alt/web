@@ -44,7 +44,7 @@ export const products: Product[] = [
     shortDescription: "The best GTA V mod menu",
     fullDescription: "Cherax is a powerful and feature-rich mod menu for Grand Theft Auto V. It offers a wide range of features including money drops, vehicle spawning, player modifications, and much more. With regular updates and excellent customer support, Cherax is the go-to choice for GTA V modding.",
     status: "Undetected",
-    onSale: true,
+    onSale: false,
     options: [
       { name: "Standard", price: 35.00, salePrice: 25.00, inStock: false },
       { name: "Premium", price: 55.00, salePrice: 45.00, inStock: false },
@@ -64,7 +64,7 @@ export const products: Product[] = [
        shortDescription: "Powerful Roblox executor with advanced features",
        fullDescription: "Potassium is a top-tier Roblox executor designed for both beginners and advanced users. It offers a user-friendly interface, high execution speed, and compatibility with a wide range of scripts. With regular updates and excellent customer support, Potassium is the ideal choice for anyone looking to enhance their Roblox experience.",
        status: "Undetected",
-       onSale: true,
+       onSale: false,
        options: [
          
          { name: "Lifetime", price: 23.00, inStock: false },
