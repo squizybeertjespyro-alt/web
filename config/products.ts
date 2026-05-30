@@ -51,6 +51,22 @@ export const products: Product[] = [
       { name: "Standard > Premium Upgrade", price: 25.00, salePrice: 20.00, inStock: false },
     ],
   },
+  {
+    id: "stand",
+    name: "Stand",
+    image: "/images/Stand.png",
+    slug: "stand-mod-menu-gtav",
+    gameSlug: "gtav-cheats",  // Links to GTA V
+    shortDescription: "One of the best GTA V mod menu's out there",
+    fullDescription: "Stand is a highly popular mod menu for Grand Theft Auto V, known for its extensive features and user-friendly interface. It offers a wide variety of options including money drops, vehicle spawning, player modifications, and more. With regular updates and a strong community, Stand remains a top choice for GTA V modding enthusiasts.",
+    status: "Undetected",
+    onSale: false,
+    options: [
+      { name: "Standard", price: 12.99, salePrice: 25.00, inStock: false },
+      { name: "Regular", price: 26.99, salePrice: 45.00, inStock: false },
+      { name: "Ultimate", price: 50.99, salePrice: 20.00, inStock: false },
+    ],
+  },
 
   // ============================================
   // ROBLOX PRODUCTS (add yours here!)
@@ -75,6 +91,8 @@ export const products: Product[] = [
   // ADD MORE PRODUCTS BELOW!
   // ============================================
 ];
+
+
 
 // Helper function to get products for a specific game
 export function getProductsByGame(gameSlug: string): Product[] {
