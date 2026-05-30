@@ -21,11 +21,21 @@ export default function AdminPage() {
   const [stock, setStock] = useState<StockItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [testOrderId, setTestOrderId] = useState("");
+
+  // Manual fulfill
+  const [fulfillOrderId, setFulfillOrderId] = useState("");
+  const [fulfillLoading, setFulfillLoading] = useState(false);
+  const [fulfillMessage, setFulfillMessage] = useState("");
+
+  // Test order
+  const [testEmail, setTestEmail] = useState("");
+  const [testProduct, setTestProduct] = useState(products[0]?.id ?? "");
+  const [testOption, setTestOption] = useState(products[0]?.options[0]?.name ?? "");
   const [testLoading, setTestLoading] = useState(false);
   const [testMessage, setTestMessage] = useState("");
 
   const currentProduct = products.find((p) => p.id === selectedProduct);
+  const currentTestProduct = products.find((p) => p.id === testProduct);
 
   const fetchStock = async (key: string) => {
     const res = await fetch("/api/admin/keys", {
@@ -53,15 +63,11 @@ export default function AdminPage() {
   const handleAddKeys = async () => {
     const keys = keysInput.split("\n").map((k) => k.trim()).filter(Boolean);
     if (!keys.length) { setMessage("No keys entered"); return; }
-
     setLoading(true);
     setMessage("");
     const res = await fetch("/api/admin/keys", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-admin-key": adminKey,
-      },
+      headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
       body: JSON.stringify({ productId: selectedProduct, optionName: selectedOption, keys }),
     });
     const data = await res.json();
@@ -71,24 +77,52 @@ export default function AdminPage() {
     setLoading(false);
   };
 
-  const handleTestFulfill = async () => {
-    if (!testOrderId.trim()) { setTestMessage("❌ Enter an order ID"); return; }
-    setTestLoading(true);
-    setTestMessage("");
+  const handleFulfill = async () => {
+    if (!fulfillOrderId.trim()) { setFulfillMessage("❌ Enter an order ID"); return; }
+    setFulfillLoading(true);
+    setFulfillMessage("");
     const res = await fetch("/api/admin/fulfill", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-admin-key": adminKey,
-      },
-      body: JSON.stringify({ orderId: testOrderId.trim() }),
+      headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
+      body: JSON.stringify({ orderId: fulfillOrderId.trim() }),
     });
     const data = await res.json();
     if (res.ok) {
-      setTestMessage(`✅ Order fulfilled! Email sent to ${data.email}`);
+      setFulfillMessage(`✅ Done! Email sent to ${data.email}`);
       fetchStock(adminKey);
     } else {
-      setTestMessage(`❌ ${data.error}`);
+      setFulfillMessage(`❌ ${data.error}`);
+    }
+    setFulfillLoading(false);
+  };
+
+  // Creates a fake order AND fulfills it in one click
+  const handleTestOrder = async () => {
+    if (!testEmail.trim()) { setTestMessage("❌ Enter an email"); return; }
+    setTestLoading(true);
+    setTestMessage("");
+
+    // Step 1: create fake order
+    const orderRes = await fetch("/api/admin/test-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
+      body: JSON.stringify({ productId: testProduct, optionName: testOption, email: testEmail }),
+    });
+    const orderData = await orderRes.json();
+    if (!orderRes.ok) { setTestMessage(`❌ ${orderData.error}`); setTestLoading(false); return; }
+
+    // Step 2: fulfill it immediately
+    const fulfillRes = await fetch("/api/admin/fulfill", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
+      body: JSON.stringify({ orderId: orderData.orderId }),
+    });
+    const fulfillData = await fulfillRes.json();
+    if (fulfillRes.ok) {
+      setTestMessage(`✅ Test email sent to ${testEmail}! Check your inbox.`);
+      fetchStock(adminKey);
+    } else {
+      setTestMessage(`❌ ${fulfillData.error}`);
     }
     setTestLoading(false);
   };
@@ -100,13 +134,9 @@ export default function AdminPage() {
           <h1 className="text-xl font-bold text-center">Admin Access</h1>
           <div className="space-y-2">
             <Label>Admin Key</Label>
-            <Input
-              type="password"
-              placeholder="Enter admin key"
-              value={adminKey}
+            <Input type="password" placeholder="Enter admin key" value={adminKey}
               onChange={(e) => setAdminKey(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleAuth()}
-            />
+              onKeyDown={(e) => e.key === "Enter" && handleAuth()} />
           </div>
           {message && <p className="text-sm text-destructive">{message}</p>}
           <Button className="w-full" onClick={handleAuth}>Enter</Button>
@@ -120,7 +150,7 @@ export default function AdminPage() {
       <div className="mx-auto max-w-4xl space-y-8">
         <h1 className="text-2xl font-bold">🔑 License Key Manager</h1>
 
-        {/* Stock overview */}
+        {/* Stock */}
         <div className="cyber-card">
           <h2 className="mb-4 text-lg font-semibold">Current Stock</h2>
           {stock.length === 0 ? (
@@ -131,8 +161,7 @@ export default function AdminPage() {
                 <div key={`${item.productId}-${item.optionName}`}
                   className="flex items-center justify-between rounded-lg border border-border p-3 text-sm">
                   <span className="text-muted-foreground">
-                    {products.find((p) => p.id === item.productId)?.name ?? item.productId}
-                    {" — "}{item.optionName}
+                    {products.find((p) => p.id === item.productId)?.name ?? item.productId} — {item.optionName}
                   </span>
                   <span className={`font-bold ${item._count.key < 5 ? "text-red-400" : "text-green-400"}`}>
                     {item._count.key} keys left
@@ -143,30 +172,66 @@ export default function AdminPage() {
           )}
         </div>
 
-        {/* Manual fulfill */}
-        <div className="cyber-card space-y-4">
-          <h2 className="text-lg font-semibold">🧪 Manual Fulfillment</h2>
+        {/* Test email - no payment needed */}
+        <div className="cyber-card space-y-4" style={{ border: "1px solid rgba(160,0,255,0.5)" }}>
+          <h2 className="text-lg font-semibold">🧪 Send Test Email (Free)</h2>
           <p className="text-sm text-muted-foreground">
-            Manually fulfill an order — assigns keys and sends the email instantly. Use this to test without waiting for a real payment, or to manually process an order.
+            Creates a fake order and sends the email with a key instantly — no payment needed.
           </p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Product</Label>
+              <select className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
+                value={testProduct}
+                onChange={(e) => {
+                  setTestProduct(e.target.value);
+                  const p = products.find((p) => p.id === e.target.value);
+                  setTestOption(p?.options[0]?.name ?? "");
+                }}>
+                {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>Option</Label>
+              <select className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
+                value={testOption} onChange={(e) => setTestOption(e.target.value)}>
+                {currentTestProduct?.options.map((o) => <option key={o.name} value={o.name}>{o.name}</option>)}
+              </select>
+            </div>
+          </div>
           <div className="space-y-2">
-            <Label>Order ID</Label>
-            <Input
-              placeholder="e.g. cmpq186i100013s3s1zvmdvt5"
-              value={testOrderId}
-              onChange={(e) => setTestOrderId(e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground">
-              Find order IDs in Vercel logs or on the order confirmed page (the part after #).
-            </p>
+            <Label>Send test email to</Label>
+            <Input type="email" placeholder="your@email.com" value={testEmail}
+              onChange={(e) => setTestEmail(e.target.value)} />
           </div>
           {testMessage && (
             <p className="text-sm font-medium" style={{ color: testMessage.startsWith("✅") ? "#4ade80" : "#f87171" }}>
               {testMessage}
             </p>
           )}
-          <Button onClick={handleTestFulfill} disabled={testLoading} variant="outline" className="w-full">
-            {testLoading ? "Fulfilling..." : "Fulfill Order & Send Email"}
+          <Button onClick={handleTestOrder} disabled={testLoading} className="w-full">
+            {testLoading ? "Sending..." : "Send Test Email"}
+          </Button>
+        </div>
+
+        {/* Manual fulfill existing order */}
+        <div className="cyber-card space-y-4">
+          <h2 className="text-lg font-semibold">⚡ Manually Fulfill Real Order</h2>
+          <p className="text-sm text-muted-foreground">
+            If a customer paid but didn't get their email, paste their order ID here to resend it.
+          </p>
+          <div className="space-y-2">
+            <Label>Order ID</Label>
+            <Input placeholder="e.g. cmpq186i100013s3s1zvmdvt5" value={fulfillOrderId}
+              onChange={(e) => setFulfillOrderId(e.target.value)} />
+          </div>
+          {fulfillMessage && (
+            <p className="text-sm font-medium" style={{ color: fulfillMessage.startsWith("✅") ? "#4ade80" : "#f87171" }}>
+              {fulfillMessage}
+            </p>
+          )}
+          <Button onClick={handleFulfill} disabled={fulfillLoading} variant="outline" className="w-full">
+            {fulfillLoading ? "Fulfilling..." : "Fulfill & Send Email"}
           </Button>
         </div>
 
@@ -176,30 +241,21 @@ export default function AdminPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>Product</Label>
-              <select
-                className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
+              <select className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
                 value={selectedProduct}
                 onChange={(e) => {
                   setSelectedProduct(e.target.value);
                   const p = products.find((p) => p.id === e.target.value);
                   setSelectedOption(p?.options[0]?.name ?? "");
-                }}
-              >
-                {products.map((p) => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
+                }}>
+                {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
             <div className="space-y-2">
               <Label>Option</Label>
-              <select
-                className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
-                value={selectedOption}
-                onChange={(e) => setSelectedOption(e.target.value)}
-              >
-                {currentProduct?.options.map((o) => (
-                  <option key={o.name} value={o.name}>{o.name}</option>
-                ))}
+              <select className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
+                value={selectedOption} onChange={(e) => setSelectedOption(e.target.value)}>
+                {currentProduct?.options.map((o) => <option key={o.name} value={o.name}>{o.name}</option>)}
               </select>
             </div>
           </div>
@@ -207,16 +263,15 @@ export default function AdminPage() {
             <Label>Keys (one per line)</Label>
             <textarea
               className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground font-mono min-h-[150px]"
-              placeholder={"XXXX-XXXX-XXXX-XXXX\nYYYY-YYYY-YYYY-YYYY\nZZZZ-ZZZZ-ZZZZ-ZZZZ"}
-              value={keysInput}
-              onChange={(e) => setKeysInput(e.target.value)}
-            />
+              placeholder={"XXXX-XXXX-XXXX-XXXX\nYYYY-YYYY-YYYY-YYYY"}
+              value={keysInput} onChange={(e) => setKeysInput(e.target.value)} />
           </div>
           {message && <p className="text-sm text-green-400">{message}</p>}
           <Button onClick={handleAddKeys} disabled={loading} className="w-full">
             {loading ? "Adding..." : "Add Keys"}
           </Button>
         </div>
+
       </div>
     </div>
   );
