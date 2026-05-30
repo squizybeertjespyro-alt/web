@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +21,9 @@ export default function AdminPage() {
   const [stock, setStock] = useState<StockItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [testOrderId, setTestOrderId] = useState("");
+  const [testLoading, setTestLoading] = useState(false);
+  const [testMessage, setTestMessage] = useState("");
 
   const currentProduct = products.find((p) => p.id === selectedProduct);
 
@@ -66,6 +69,28 @@ export default function AdminPage() {
     setKeysInput("");
     fetchStock(adminKey);
     setLoading(false);
+  };
+
+  const handleTestFulfill = async () => {
+    if (!testOrderId.trim()) { setTestMessage("❌ Enter an order ID"); return; }
+    setTestLoading(true);
+    setTestMessage("");
+    const res = await fetch("/api/admin/fulfill", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-admin-key": adminKey,
+      },
+      body: JSON.stringify({ orderId: testOrderId.trim() }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setTestMessage(`✅ Order fulfilled! Email sent to ${data.email}`);
+      fetchStock(adminKey);
+    } else {
+      setTestMessage(`❌ ${data.error}`);
+    }
+    setTestLoading(false);
   };
 
   if (!authed) {
@@ -118,10 +143,36 @@ export default function AdminPage() {
           )}
         </div>
 
+        {/* Manual fulfill */}
+        <div className="cyber-card space-y-4">
+          <h2 className="text-lg font-semibold">🧪 Manual Fulfillment</h2>
+          <p className="text-sm text-muted-foreground">
+            Manually fulfill an order — assigns keys and sends the email instantly. Use this to test without waiting for a real payment, or to manually process an order.
+          </p>
+          <div className="space-y-2">
+            <Label>Order ID</Label>
+            <Input
+              placeholder="e.g. cmpq186i100013s3s1zvmdvt5"
+              value={testOrderId}
+              onChange={(e) => setTestOrderId(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Find order IDs in Vercel logs or on the order confirmed page (the part after #).
+            </p>
+          </div>
+          {testMessage && (
+            <p className="text-sm font-medium" style={{ color: testMessage.startsWith("✅") ? "#4ade80" : "#f87171" }}>
+              {testMessage}
+            </p>
+          )}
+          <Button onClick={handleTestFulfill} disabled={testLoading} variant="outline" className="w-full">
+            {testLoading ? "Fulfilling..." : "Fulfill Order & Send Email"}
+          </Button>
+        </div>
+
         {/* Add keys */}
         <div className="cyber-card space-y-4">
           <h2 className="text-lg font-semibold">Add Keys</h2>
-
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>Product</Label>
@@ -139,7 +190,6 @@ export default function AdminPage() {
                 ))}
               </select>
             </div>
-
             <div className="space-y-2">
               <Label>Option</Label>
               <select
@@ -153,7 +203,6 @@ export default function AdminPage() {
               </select>
             </div>
           </div>
-
           <div className="space-y-2">
             <Label>Keys (one per line)</Label>
             <textarea
@@ -163,11 +212,7 @@ export default function AdminPage() {
               onChange={(e) => setKeysInput(e.target.value)}
             />
           </div>
-
-          {message && (
-            <p className="text-sm text-green-400">{message}</p>
-          )}
-
+          {message && <p className="text-sm text-green-400">{message}</p>}
           <Button onClick={handleAddKeys} disabled={loading} className="w-full">
             {loading ? "Adding..." : "Add Keys"}
           </Button>

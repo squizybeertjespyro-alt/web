@@ -15,7 +15,7 @@ interface SendOrderEmailParams {
   orderId: string;
   items: OrderItem[];
   total: number;
-  productContent?: string; // the actual product delivered (key, link, etc.)
+  productContent?: string;
 }
 
 export async function sendOrderConfirmationEmail({
@@ -36,31 +36,61 @@ export async function sendOrderConfirmationEmail({
     )
     .join("");
 
-  const productSection = productContent
+  // Parse product content into individual key blocks
+  const keyBlocks = productContent
+    ? productContent
+        .split("\n\n")
+        .map((block) => {
+          const lines = block.split("\n");
+          const title = lines[0]; // e.g. "Cherax — 1 Month:"
+          const keys = lines.slice(1);
+          return `
+            <div style="margin-bottom: 16px;">
+              <p style="margin: 0 0 8px; font-size: 13px; color: #aaa;">${title}</p>
+              ${keys
+                .map(
+                  (key) => `
+                <div style="background: #0a0a0a; border: 1px solid #333; border-radius: 6px; padding: 12px; margin-bottom: 8px;">
+                  <code style="font-family: monospace; font-size: 14px; color: #b100ff; letter-spacing: 0.05em; word-break: break-all;">${key}</code>
+                </div>`
+                )
+                .join("")}
+            </div>`;
+        })
+        .join("")
+    : null;
+
+  const productSection = keyBlocks
     ? `
     <div style="margin-top:32px; padding:24px; background:#111; border:1px solid #333; border-radius:8px;">
-      <h2 style="margin:0 0 12px; font-size:16px; color:#fff;">Your Product</h2>
-      <pre style="margin:0; font-family:monospace; color:#a3e635; white-space:pre-wrap; word-break:break-all;">${productContent}</pre>
+      <h2 style="margin:0 0 16px; font-size:16px; color:#fff;">🔑 Your License Key(s)</h2>
+      ${keyBlocks}
+      <p style="margin: 16px 0 0; font-size: 12px; color: #666;">
+        Keep this email safe — your license key(s) are unique to your order and cannot be reissued.
+        Need help? Contact us on <a href="${siteConfig.socials.discord}" style="color: #b100ff;">Discord</a>.
+      </p>
     </div>`
     : `
     <div style="margin-top:32px; padding:24px; background:#111; border:1px solid #333; border-radius:8px;">
-      <p style="margin:0; color:#aaa;">Your product will be sent to you shortly. If you have any questions, contact us on Discord.</p>
+      <p style="margin:0; color:#aaa;">Your product will be delivered shortly. If you have any questions, contact us on Discord.</p>
     </div>`;
 
   await resend.emails.send({
-    from: `${siteConfig.name} <orders@${process.env.EMAIL_DOMAIN ?? "yourdomain.com"}>`,
+    from: `${siteConfig.name} <orders@${process.env.EMAIL_DOMAIN ?? "hardduckmarket.xyz"}>`,
     to,
-    subject: `Order Confirmed — #${orderId.slice(-8).toUpperCase()}`,
+    subject: `Your Order & License Key(s) — #${orderId.slice(-8).toUpperCase()}`,
     html: `
     <!DOCTYPE html>
     <html>
     <head><meta charset="utf-8"></head>
     <body style="margin:0; padding:0; background:#0a0a0a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color:#fff;">
       <div style="max-width:560px; margin:40px auto; padding:0 20px;">
-        
+
         <div style="margin-bottom:32px;">
-          <h1 style="font-size:24px; font-weight:700; margin:0 0 4px;">${siteConfig.name}</h1>
-          <p style="margin:0; color:#aaa; font-size:14px;">Order Confirmation</p>
+          <h1 style="font-size:24px; font-weight:700; margin:0 0 4px;">
+            ${siteConfig.name.slice(0, -6)}<span style="color:#b100ff;">${siteConfig.name.slice(-6)}</span>
+          </h1>
+          <p style="margin:0; color:#aaa; font-size:14px;">Order Confirmation & Product Delivery</p>
         </div>
 
         <div style="background:#111; border:1px solid #222; border-radius:12px; padding:32px; margin-bottom:24px;">
@@ -82,7 +112,7 @@ export async function sendOrderConfirmationEmail({
           </table>
           <div style="margin-top:16px; padding-top:16px; border-top:1px solid #333; display:flex; justify-content:space-between; font-size:16px; font-weight:700;">
             <span>Total</span>
-            <span>${siteConfig.currency}${total.toFixed(2)}</span>
+            <span style="color:#b100ff;">${siteConfig.currency}${total.toFixed(2)}</span>
           </div>
         </div>
 
