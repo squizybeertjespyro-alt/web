@@ -55,21 +55,21 @@ export const products: Product[] = [
   // ============================================
   // ROBLOX PRODUCTS (add yours here!)
   // ============================================
-  // {
-  //   id: "example-roblox",
-  //   name: "Example Roblox Product",
-  //   image: "/images/example.png",
-  //   slug: "example-roblox-product",
-  //   gameSlug: "roblox-cheats",
-  //   shortDescription: "Short description here",
-  //   fullDescription: "Full description here...",
-  //   status: "Undetected",
-  //   onSale: false,
-  //   options: [
-  //     { name: "1 Month", price: 10.00, inStock: true },
-  //     { name: "Lifetime", price: 50.00, inStock: true },
-  //   ],
-  // },
+  {
+       id: "potassium",
+       name: "Potassium",
+       image: "/images/potassium.png",
+       slug: "potassium-executor-roblox",
+       gameSlug: "roblox-cheats",
+       shortDescription: "Powerful Roblox executor with advanced features",
+       fullDescription: "Potassium is a top-tier Roblox executor designed for both beginners and advanced users. It offers a user-friendly interface, high execution speed, and compatibility with a wide range of scripts. With regular updates and excellent customer support, Potassium is the ideal choice for anyone looking to enhance their Roblox experience.",
+       status: "Undetected",
+       onSale: true,
+       options: [
+         
+         { name: "Lifetime", price: 23.00, inStock: false },
+        ],
+    },
 
   // ============================================
   // ADD MORE PRODUCTS BELOW!
