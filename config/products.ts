@@ -35,22 +35,22 @@ export const products: Product[] = [
   // ============================================
   // GTA V PRODUCTS
   // ============================================
-  {
-    id: "cherax",
-    name: "Cherax",
-    image: "/images/cherax.png",
-    slug: "cherax-mod-menu-gtav",
-    gameSlug: "gtav-cheats",  // Links to GTA V
-    shortDescription: "The best GTA V mod menu",
-    fullDescription: "Cherax is a powerful and feature-rich mod menu for Grand Theft Auto V. It offers a wide range of features including money drops, vehicle spawning, player modifications, and much more. With regular updates and excellent customer support, Cherax is the go-to choice for GTA V modding.",
-    status: "Undetected",
-    onSale: false,
-    options: [
-      { name: "Standard", price: 25.00, inStock: false },
-      { name: "Premium", price: 45.00, inStock: false },
-      { name: "Standard > Premium Upgrade", price: 20.00, inStock: false },
-    ],
-  },
+ // {
+  //  id: "cherax",
+   // name: "Cherax",
+   // image: "/images/cherax.png",
+   // slug: "cherax-mod-menu-gtav",
+    //gameSlug: "gtav-cheats",  // Links to GTA V
+    //shortDescription: "The best GTA V mod menu",
+    //fullDescription: "Cherax is a powerful and feature-rich mod menu for Grand Theft Auto V. It offers a wide range of features including money drops, vehicle spawning, player modifications, and much more. With regular updates and excellent customer support, Cherax is the go-to choice for GTA V modding.",
+    //status: "Undetected",
+    //onSale: false,
+    //options: [
+    //  { name: "Standard", price: 25.00, inStock: false },
+    //  { name: "Premium", price: 45.00, inStock: false },
+    //  { name: "Standard > Premium Upgrade", price: 20.00, inStock: false },
+    //],
+  //},
   {
     id: "stand",
     name: "Stand",
