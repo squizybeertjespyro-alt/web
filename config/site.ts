@@ -11,7 +11,7 @@ export const siteConfig = {
 
   // Your social links (leave empty "" if you don't have one)
   socials: {
-    discord: "https://discord.gg/4RQycSm3",
+    discord: "discord.com/sTvRtUZBxR", // perm link
     telegram: "",
     youtube: "",
   },
