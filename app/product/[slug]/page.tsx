@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -30,10 +30,45 @@ export default function ProductPage({ params }: PageProps) {
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
 
+  // Live stock from database
+  const [stockMap, setStockMap] = useState<Record<string, boolean>>({});
+  const [stockLoading, setStockLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStock = async () => {
+      setStockLoading(true);
+      const results: Record<string, boolean> = {};
+      await Promise.all(
+        product.options.map(async (option) => {
+          const res = await fetch(
+            `/api/stock?productId=${encodeURIComponent(product.id)}&optionName=${encodeURIComponent(option.name)}`
+          );
+          if (res.ok) {
+            const data = await res.json();
+            results[option.name] = data.inStock;
+          } else {
+            // Fall back to config value if API fails
+            results[option.name] = option.inStock;
+          }
+        })
+      );
+      setStockMap(results);
+      setStockLoading(false);
+    };
+    fetchStock();
+  }, [product]);
+
+  const isInStock = (option: ProductOption) => {
+    if (stockLoading) return option.inStock; // use config value while loading
+    return stockMap[option.name] ?? option.inStock;
+  };
+
   const currentPrice = selectedOption.salePrice ?? selectedOption.price;
   const totalPrice = currentPrice * quantity;
+  const selectedInStock = isInStock(selectedOption);
 
   const handleAddToCart = () => {
+    if (!selectedInStock) return;
     addItem({
       productId: product.id,
       productName: product.name,
@@ -99,19 +134,22 @@ export default function ProductPage({ params }: PageProps) {
             <div className="space-y-3">
               <label className="text-sm font-medium text-foreground">Type:</label>
               <div className="flex flex-wrap gap-2">
-                {product.options.map((option) => (
-                  <button key={option.name} onClick={() => setSelectedOption(option)}
-                    disabled={!option.inStock}
-                    className={`rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
-                      selectedOption.name === option.name
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : option.inStock
-                        ? "border-border bg-card text-foreground hover:border-primary"
-                        : "cursor-not-allowed border-border bg-muted text-muted-foreground opacity-50"
-                    }`}>
-                    {option.name}{!option.inStock && " (Out of Stock)"}
-                  </button>
-                ))}
+                {product.options.map((option) => {
+                  const inStock = isInStock(option);
+                  return (
+                    <button key={option.name} onClick={() => inStock && setSelectedOption(option)}
+                      disabled={!inStock}
+                      className={`rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
+                        selectedOption.name === option.name
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : inStock
+                          ? "border-border bg-card text-foreground hover:border-primary"
+                          : "cursor-not-allowed border-border bg-muted text-muted-foreground opacity-50"
+                      }`}>
+                      {option.name}{!inStock && " (Out of Stock)"}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -122,9 +160,13 @@ export default function ProductPage({ params }: PageProps) {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Stock:</span>
-                <span className={selectedOption.inStock ? "text-green-400" : "text-red-400"}>
-                  {selectedOption.inStock ? "In Stock" : "Out of Stock"}
-                </span>
+                {stockLoading ? (
+                  <span className="text-muted-foreground">Checking...</span>
+                ) : (
+                  <span className={selectedInStock ? "text-green-400" : "text-red-400"}>
+                    {selectedInStock ? "In Stock" : "Out of Stock"}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -139,9 +181,11 @@ export default function ProductPage({ params }: PageProps) {
                 </button>
               </div>
 
-              <Button size="lg" className="flex-1" disabled={!selectedOption.inStock} onClick={handleAddToCart}>
+              <Button size="lg" className="flex-1" disabled={!selectedInStock || stockLoading} onClick={handleAddToCart}>
                 {added ? (
                   <><Check className="mr-2 h-5 w-5" />Added to Cart!</>
+                ) : !selectedInStock ? (
+                  <>Out of Stock</>
                 ) : (
                   <><ShoppingCart className="mr-2 h-5 w-5" />Add to Cart — {siteConfig.currency}{totalPrice.toFixed(2)}</>
                 )}
