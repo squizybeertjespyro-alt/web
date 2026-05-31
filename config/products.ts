@@ -62,8 +62,8 @@ export const products: Product[] = [
     status: "Undetected",
     onSale: false,
     options: [
-      { name: "Standard", price: 12.99, inStock: false },
-      { name: "Regular", price: 26.99, inStock: false },
+      { name: "basic", price: 12.99, inStock: true },
+      { name: "Regular", price: 26.99, inStock: true },
       { name: "Ultimate", price: 50.99, salePrice: 20.00, inStock: false },
     ],
   },
