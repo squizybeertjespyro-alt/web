@@ -119,6 +119,14 @@ export default function CheckoutPage() {
               <Lock className="mr-2 h-4 w-4" />
               {loading ? "Processing…" : `Pay with Crypto — ${siteConfig.currency}${total.toFixed(2)}`}
             </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="w-full mt-3"
+              onClick={() => window.open("https://discord.gg/sTvRtUZBxR", "_blank")}
+             >
+              Pay with PayPal or gift cards or others
+            </Button>
           </div>
 
           {/* Summary */}
