@@ -10,15 +10,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { siteConfig } from "@/config/site";
 import Link from "next/link";
-import { ShoppingBag, Bitcoin, Lock } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { ShoppingBag, Bitcoin, Lock, MessageCircle } from "lucide-react";
+
+type PayMethod = "crypto" | "discord";
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
   const { user } = useAuth();
-  const router = useRouter();
 
   const [email, setEmail] = useState(user?.email ?? "");
+  const [payMethod, setPayMethod] = useState<PayMethod>("crypto");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -38,6 +39,17 @@ export default function CheckoutPage() {
 
   const handleCheckout = async () => {
     setError("");
+
+    if (payMethod === "discord") {
+      // Build a message with the order details
+      const orderSummary = items
+        .map((i) => `${i.productName} (${i.optionName}) x${i.quantity}`)
+        .join(", ");
+      const msg = encodeURIComponent(`Hi! I want to order: ${orderSummary} — Total: ${siteConfig.currency}${total.toFixed(2)}`);
+      window.open(`https://discord.gg/sTvRtUZBxR`, "_blank");
+      return;
+    }
+
     if (!email) { setError("Please enter your email address."); return; }
 
     setLoading(true);
@@ -49,7 +61,6 @@ export default function CheckoutPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-
       clearCart();
       window.location.href = data.hostedUrl;
     } catch (err: unknown) {
@@ -68,45 +79,79 @@ export default function CheckoutPage() {
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="space-y-8 lg:col-span-2">
 
-            {/* Email+1 */}
-            <div className="rounded-xl border border-border bg-card p-6">
-              <h2 className="mb-4 text-base font-semibold">Contact</h2>
-              {user ? (
-                <p className="text-sm text-muted-foreground">
-                  Ordering as <span className="text-foreground font-medium">{user.email}</span>
-                  {" "}— <Link href="/api/auth/logout" className="text-primary underline">Not you?</Link>
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email address</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Your order confirmation and product will be sent here.{" "}
-                    <Link href="/login" className="text-primary underline">Have an account?</Link>
+            {/* Email — only needed for crypto */}
+            {payMethod === "crypto" && (
+              <div className="rounded-xl border border-border bg-card p-6">
+                <h2 className="mb-4 text-base font-semibold">Contact</h2>
+                {user ? (
+                  <p className="text-sm text-muted-foreground">
+                    Ordering as <span className="text-foreground font-medium">{user.email}</span>
+                    {" "}— <Link href="/api/auth/logout" className="text-primary underline">Not you?</Link>
                   </p>
-                </div>
-              )}
-            </div>
-
-            {/* Payment */}
-            <div className="rounded-xl border border-border bg-card p-6">
-              <h2 className="mb-4 text-base font-semibold">Payment</h2>
-              <div className="flex items-center gap-3 rounded-lg border border-primary bg-primary/10 p-4">
-                <Bitcoin className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="text-sm font-medium">Crypto</p>
-                  <p className="text-xs text-muted-foreground">BTC, ETH, USDT, LTC and more via NOWPayments</p>
-                </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email address</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Your order confirmation and license key will be sent here.{" "}
+                      <Link href="/login" className="text-primary underline">Have an account?</Link>
+                    </p>
+                  </div>
+                )}
               </div>
-              <p className="mt-3 text-xs text-muted-foreground">
-                You'll be redirected to NOWPayments to complete your payment securely.
-              </p>
+            )}
+
+            {/* Payment method */}
+            <div className="rounded-xl border border-border bg-card p-6">
+              <h2 className="mb-4 text-base font-semibold">Payment Method</h2>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => setPayMethod("crypto")}
+                  className={`flex items-center gap-3 rounded-lg border p-4 text-left transition-colors ${
+                    payMethod === "crypto"
+                      ? "border-primary bg-primary/10"
+                      : "border-border hover:border-primary/50"
+                  }`}
+                >
+                  <Bitcoin className="h-5 w-5 text-primary flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium">Crypto</p>
+                    <p className="text-xs text-muted-foreground">BTC, ETH, USDT…</p>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => setPayMethod("discord")}
+                  className={`flex items-center gap-3 rounded-lg border p-4 text-left transition-colors ${
+                    payMethod === "discord"
+                      ? "border-primary bg-primary/10"
+                      : "border-border hover:border-primary/50"
+                  }`}
+                >
+                  <MessageCircle className="h-5 w-5 text-primary flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium">PayPal or other methods</p>
+                    <p className="text-xs text-muted-foreground">via Discord</p>
+                  </div>
+                </button>
+              </div>
+
+              {payMethod === "crypto" && (
+                <p className="mt-3 text-xs text-muted-foreground">
+                  You'll be redirected to NOWPayments to complete your payment securely.
+                </p>
+              )}
+              {payMethod === "discord" && (
+                <p className="mt-3 text-xs text-muted-foreground">
+                  You'll be redirected to our Discord server. Open a ticket and we'll process your PayPal or other payment manually.
+                </p>
+              )}
             </div>
 
             {error && (
@@ -117,15 +162,11 @@ export default function CheckoutPage() {
 
             <Button onClick={handleCheckout} disabled={loading} size="lg" className="w-full">
               <Lock className="mr-2 h-4 w-4" />
-              {loading ? "Processing…" : `Pay with Crypto — ${siteConfig.currency}${total.toFixed(2)}`}
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="w-full mt-3"
-              onClick={() => window.open("https://discord.gg/sTvRtUZBxR", "_blank")}
-             >
-              Pay with PayPal or gift cards or others
+              {loading
+                ? "Processing…"
+                : payMethod === "discord"
+                ? "Continue to Discord"
+                : `Pay with Crypto — ${siteConfig.currency}${total.toFixed(2)}`}
             </Button>
           </div>
 
