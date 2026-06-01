@@ -67,10 +67,42 @@ export const products: Product[] = [
       { name: "Ultimate", price: 50.99, salePrice: 20.00, inStock: false },
     ],
   },
+  {
+    id: "midnight",
+    name: "Midnight",
+    image: "/images/Midnight.png",
+    slug: "midnight-mod-menu-gtav",
+    gameSlug: "gtav-cheats",  // Links to GTA V
+    shortDescription: "Greate and Unique GTA V mod menu",
+    fullDescription: "Midnight is a unique and feature-packed mod menu for Grand Theft Auto V. It offers a wide range of features including money drops, vehicle spawning, player modifications, and more. With regular updates and excellent customer support, Midnight is a great choice for GTA V modding.",
+    status: "Undetected",
+    onSale: false,
+    options: [
+      { name: "Month", price: 7.99, inStock: true },
+      { name: "Lifetime", price: 20.99, inStock: true },
+    ],
+  },
 
   // ============================================
   // ROBLOX PRODUCTS (add yours here!)
   // ============================================
+    {
+    id: "xenov2",
+    name: "XenoV2",
+    image: "/images/Xeno.png",
+    slug: "xeno-executor-roblox",
+    gameSlug: "roblox-cheats",  // Links to Roblox
+    shortDescription: "One of the best Roblox executor's out there",
+    fullDescription: "Xeno V2 is a powerful Roblox executor With 100% UNC and sUNC known for its beginner friendly interface and extensive features.",
+    status: "Undetected",
+    onSale: false,
+    options: [
+      { name: "Month", price: 28.99, inStock: true },
+      { name: "Lifetime", price: 48.99, inStock: true },
+      
+    ],
+  },
+
   {
        id: "potassium",
        name: "Potassium",
