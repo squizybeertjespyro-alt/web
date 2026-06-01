@@ -89,7 +89,7 @@ export const products: Product[] = [
     {
     id: "xenov2",
     name: "XenoV2",
-    image: "/images/Xeno.png",
+    image: "/images/xeno.png",
     slug: "xeno-executor-roblox",
     gameSlug: "roblox-cheats",  // Links to Roblox
     shortDescription: "One of the best Roblox executor's out there",
