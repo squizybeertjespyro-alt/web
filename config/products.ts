@@ -70,7 +70,7 @@ export const products: Product[] = [
   {
     id: "midnight",
     name: "Midnight",
-    image: "/images/Midnight.png",
+    image: "/images/midnight.png",
     slug: "midnight-mod-menu-gtav",
     gameSlug: "gtav-cheats",  // Links to GTA V
     shortDescription: "Greate and Unique GTA V mod menu",
