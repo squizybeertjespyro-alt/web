@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendOrderConfirmationEmail } from "@/lib/email";
+import { sendOrderNotification } from "@/lib/discord";
 
 export async function POST(req: NextRequest) {
   const adminKey = req.headers.get("x-admin-key");
@@ -64,6 +65,13 @@ export async function POST(req: NextRequest) {
     items: order.items,
     total: order.total,
     productContent,
+  });
+
+  await sendOrderNotification({
+    orderId: order.id,
+    customerEmail,
+    items: order.items,
+    total: order.total,
   });
 
   return NextResponse.json({ ok: true, email: customerEmail });
