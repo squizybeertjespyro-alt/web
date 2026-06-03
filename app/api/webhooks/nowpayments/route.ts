@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendOrderConfirmationEmail } from "@/lib/email";
 import crypto from "crypto";
-
+import { sendOrderNotification } from "@/lib/discord";
 export async function POST(req: NextRequest) {
   console.log("🔔 NOWPayments webhook received!");
 
