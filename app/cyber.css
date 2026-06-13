@@ -7,7 +7,7 @@ body {
 
 .cyber-card {
   background: rgba(20, 0, 40, 0.6);
-  border: 1px solid rgba(160, 0, 255, 0.3);
+  border: 1px solid rgba(249, 197, 24, 0.492);
   backdrop-filter: blur(10px);
   border-radius: 16px;
   padding: 12px;
@@ -16,12 +16,12 @@ body {
 
 .cyber-card:hover {
   transform: scale(1.03);
-  box-shadow: 0 0 25px rgba(160, 0, 255, 0.5);
-  border-color: rgba(160, 0, 255, 0.8);
+  box-shadow: 0 0 25px rgba(255, 196, 0, 0.8);
+  border-color: rgba(255, 196, 0, 0.8);
 }
 
 .cyber-btn {
-  background: linear-gradient(90deg, #7a1fff, #b100ff);
+  background: linear-gradient(90deg, #f0dc3f, #f0dc3f);
   color: white;
   border: none;
   padding: 10px 14px;
@@ -45,8 +45,8 @@ body {
     -45deg,
     #0a0014,
     #1a0033,
-    #4b0082,
-    #7a1fff,
+    #000000,
+    #000000,
     #000
   );
   background-size: 400% 400%;

@@ -12,7 +12,7 @@ export default function ShopPage() {
           {/* Breadcrumb */}
           <nav className="mb-6 flex items-center gap-2 text-sm">
             <Link
-              href="/"
+              href="/home"
               className="text-primary transition-colors hover:text-primary/80"
             >
               Home
