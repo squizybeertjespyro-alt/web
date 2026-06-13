@@ -1,12 +1,12 @@
 body {
   margin: 0;
-  background: radial-gradient(circle at top, #1a0033, #0a0014 60%, #000);
+  background: radial-gradient(circle at top, #332f00, #141200 60%, #000);
   color: white;
   font-family: Arial, sans-serif;
 }
 
 .cyber-card {
-  background: rgba(20, 0, 40, 0.6);
+  background: rgba(40, 39, 0, 0.6);
   border: 1px solid rgba(249, 197, 24, 0.492);
   backdrop-filter: blur(10px);
   border-radius: 16px;
@@ -32,7 +32,7 @@ body {
 
 .cyber-btn:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 20px rgba(160, 0, 255, 0.6);
+  box-shadow: 0 0 20px rgba(255, 234, 0, 0.6);
 }
 @keyframes bgMove {
   0% { background-position: 0% 50%; }
