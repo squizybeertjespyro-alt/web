@@ -62,7 +62,7 @@ export default function HomePage() {
                 <Link href="/shop">Browse Shop</Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="h-12 px-8 text-base">
-                <a href="https://discord.gg/sTvRtUZBxR" target="_blank" rel="noopener noreferrer">
+                <a href="https://discord.gg/hardduckmarket" target="_blank" rel="noopener noreferrer">
                   Join Discord
                 </a>
               </Button>
