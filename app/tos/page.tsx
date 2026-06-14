@@ -127,6 +127,14 @@ export default function TermsPage() {
             </p>
           </section>
 
+          {/* Section 9} */}
+          <section className="cyber-card">
+            <h2 className="mb-3 text-lg font-bold text-white">9. Problems With The Product</h2>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              We are not responsible for any issues or problems with the product you purchase from our store. Please ensure you read the product descriptions and reviews before making a purchase. If you encounter any problems, please contact the software administrator or support team of the product you purchased. We are not liable for any damages or losses resulting from the use of the product. We are only responsible for delivering the license key to you, and any issues with the product itself should be addressed with the software provider.
+            </p>
+          </section>
+
           {/* Section 9 */}
           <section className="cyber-card">
             <h2 className="mb-3 text-lg font-bold text-white">9. Legal Information</h2>
