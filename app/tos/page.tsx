@@ -135,9 +135,9 @@ export default function TermsPage() {
             </p>
           </section>
 
-          {/* Section 9 */}
+          {/* Section 10 */}
           <section className="cyber-card">
-            <h2 className="mb-3 text-lg font-bold text-white">9. Legal Information</h2>
+            <h2 className="mb-3 text-lg font-bold text-white">10. Legal Information</h2>
             <div className="space-y-4 text-sm leading-relaxed text-muted-foreground">
               <div>
                 <span className="font-semibold text-white">Site Publisher</span>
