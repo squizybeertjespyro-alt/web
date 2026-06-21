@@ -58,7 +58,7 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href={siteConfig.socials.trustpilot}
+                  href="https://www.trustpilot.com/review/hardduckmarket.xyz"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
