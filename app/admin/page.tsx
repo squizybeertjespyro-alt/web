@@ -147,7 +147,7 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-background text-foreground p-8">
       <div className="mx-auto max-w-4xl space-y-8">
-        <h1 className="text-2xl font-bold">🔑 License Key Manager</h1>
+        <h1 className="text-2xl font-bold"> License Key Manager</h1>
 
         {/* Stock */}
         <div className="cyber-card">
@@ -173,7 +173,7 @@ export default function AdminPage() {
 
         {/* Test email */}
         <div className="cyber-card space-y-4" style={{ border: "1px solid rgba(160,0,255,0.5)" }}>
-          <h2 className="text-lg font-semibold">🧪 Send Test Email (Free)</h2>
+          <h2 className="text-lg font-semibold"> Send Test Email (Free)</h2>
           <p className="text-sm text-muted-foreground">Creates a fake order and sends the email with a key instantly — no payment needed.</p>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
@@ -203,7 +203,7 @@ export default function AdminPage() {
 
         {/* Manual fulfill */}
         <div className="cyber-card space-y-4">
-          <h2 className="text-lg font-semibold">⚡ Manually Fulfill Real Order</h2>
+          <h2 className="text-lg font-semibold"> Manually Fulfill Real Order</h2>
           <p className="text-sm text-muted-foreground">If a customer paid but didn't get their email, paste their order ID here to resend it.</p>
           <div className="space-y-2">
             <Label>Order ID</Label>
@@ -217,7 +217,7 @@ export default function AdminPage() {
 
         {/* Broadcast */}
         <div className="cyber-card space-y-4" style={{ border: "1px solid rgba(160,0,255,0.5)" }}>
-          <h2 className="text-lg font-semibold">📢 Send Broadcast Email</h2>
+          <h2 className="text-lg font-semibold"> Send Broadcast Email</h2>
           <p className="text-sm text-muted-foreground">Send a promotional or announcement email. One email address per line.</p>
           <div className="space-y-2">
             <Label>Send from</Label>
@@ -235,7 +235,7 @@ export default function AdminPage() {
           </div>
           <div className="space-y-2">
             <Label>Subject</Label>
-            <Input placeholder="e.g. 🔥 New products just dropped!" value={broadcastSubject} onChange={(e) => setBroadcastSubject(e.target.value)} />
+            <Input placeholder="for example: New products just dropped!" value={broadcastSubject} onChange={(e) => setBroadcastSubject(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label>Message</Label>
