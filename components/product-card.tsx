@@ -2,13 +2,41 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import type { Game } from "@/config/games";
+import { products } from "@/config/products";
 
 interface ProductCardProps {
   game: Game;
 }
 
 export function ProductCard({ game }: ProductCardProps) {
+  const [inStock, setInStock] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const gameProducts = products.filter((p) => p.gameSlug === game.slug);
+    if (gameProducts.length === 0) return;
+
+    const checkStock = async () => {
+      try {
+        const results = await Promise.all(
+          gameProducts.flatMap((product) =>
+            product.options.map((option) =>
+              fetch(`/api/stock?productId=${encodeURIComponent(product.id)}&optionName=${encodeURIComponent(option.name)}`)
+                .then((r) => r.json())
+                .then((d) => d.inStock as boolean)
+            )
+          )
+        );
+        setInStock(results.some(Boolean));
+      } catch {
+        setInStock(null);
+      }
+    };
+
+    checkStock();
+  }, [game.slug]);
+
   return (
     <Link
       href={`/product-category/${game.slug}`}
@@ -22,9 +50,18 @@ export function ProductCard({ game }: ProductCardProps) {
           className="object-cover transition-transform duration-300 group-hover:scale-110"
           sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, (max-width: 1280px) 20vw, 16vw"
         />
-
-        {/* Overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+        {/* Stock badge */}
+        {inStock !== null && (
+          <div className={`absolute top-2 right-2 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+            inStock
+              ? "bg-green-500/20 text-green-400 border border-green-500/30"
+              : "bg-red-500/20 text-red-400 border border-red-500/30"
+          }`}>
+            {inStock ? "In Stock" : "Out of Stock"}
+          </div>
+        )}
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 p-3">

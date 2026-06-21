@@ -1,41 +1,31 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { use, useEffect, useState } from "react";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { games } from "@/config/games";
 import { getProductsByGame, type Product } from "@/config/products";
 import { siteConfig } from "@/config/site";
 
-// ============================================
-// This page is AUTOMATIC!
-// Just add games to config/games.ts and 
-// products to config/products.ts
-// Pages are created automatically!
-// ============================================
-
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function CategoryPage({ params }: PageProps) {
-  const { slug } = await params;
-  
-  // Find the game
-  const game = games.find((g) => g.slug === slug);
-  if (!game) {
-    notFound();
-  }
+export default function CategoryPage({ params }: PageProps) {
+  const { slug } = use(params);
 
-  // Get products for this game
+  const game = games.find((g) => g.slug === slug);
+  if (!game) notFound();
+
   const products = getProductsByGame(slug);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
-      
       <main className="mx-auto max-w-7xl px-4 py-8 lg:px-8">
-        {/* Breadcrumb */}
         <nav className="mb-8 flex items-center gap-2 text-sm text-muted-foreground">
           <Link href="/" className="hover:text-foreground">Home</Link>
           <span>/</span>
@@ -44,10 +34,8 @@ export default async function CategoryPage({ params }: PageProps) {
           <span className="text-foreground">{game.name}</span>
         </nav>
 
-        {/* Title */}
         <h1 className="mb-8 text-3xl font-bold text-foreground">{game.name}</h1>
 
-        {/* Products Grid */}
         {products.length > 0 ? (
           <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {products.map((product) => (
@@ -56,36 +44,61 @@ export default async function CategoryPage({ params }: PageProps) {
           </div>
         ) : (
           <div className="py-16 text-center">
-            <p className="text-lg text-muted-foreground">
-              No products available yet. Add products in config/products.ts
-            </p>
+            <p className="text-lg text-muted-foreground">No products available yet.</p>
           </div>
         )}
       </main>
-
       <Footer />
     </div>
   );
 }
 
-// Product card component for category page
 function ProductCard({ product }: { product: Product }) {
   const lowestPrice = Math.min(...product.options.map((o) => o.salePrice ?? o.price));
   const highestPrice = Math.max(...product.options.map((o) => o.price));
+
+  const [inStock, setInStock] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkStock = async () => {
+      try {
+        const results = await Promise.all(
+          product.options.map((option) =>
+            fetch(`/api/stock?productId=${encodeURIComponent(product.id)}&optionName=${encodeURIComponent(option.name)}`)
+              .then((r) => r.json())
+              .then((d) => d.inStock as boolean)
+          )
+        );
+        setInStock(results.some(Boolean));
+      } catch {
+        setInStock(null);
+      }
+    };
+    checkStock();
+  }, [product]);
 
   return (
     <Link
       href={`/product/${product.slug}`}
       className="group relative overflow-hidden rounded-lg bg-card transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/10"
     >
-      {/* Sale Badge */}
       {product.onSale && (
         <div className="absolute left-3 top-3 z-10 rounded bg-primary px-2 py-1 text-xs font-bold text-primary-foreground">
           Sale!
         </div>
       )}
 
-      {/* Image */}
+      {/* Stock badge */}
+      {inStock !== null && (
+        <div className={`absolute right-3 top-3 z-10 rounded-full px-2 py-0.5 text-[10px] font-bold border ${
+          inStock
+            ? "bg-green-500/20 text-green-400 border-green-500/30"
+            : "bg-red-500/20 text-red-400 border-red-500/30"
+        }`}>
+          {inStock ? "In Stock" : "Out of Stock"}
+        </div>
+      )}
+
       <div className="relative aspect-square overflow-hidden">
         <Image
           src={product.image}
@@ -96,14 +109,12 @@ function ProductCard({ product }: { product: Product }) {
         />
       </div>
 
-      {/* Content */}
       <div className="p-4">
         <h3 className="mb-1 font-semibold text-foreground">{product.name}</h3>
         <p className="mb-2 text-sm text-muted-foreground line-clamp-2">
           {product.shortDescription}
         </p>
-        
-        {/* Price */}
+
         <div className="flex items-center gap-2">
           {product.onSale && (
             <span className="text-sm text-muted-foreground line-through">
@@ -116,10 +127,9 @@ function ProductCard({ product }: { product: Product }) {
           </span>
         </div>
 
-        {/* Status */}
-        <div className="mt-2">
+        <div className="mt-2 flex items-center justify-between">
           <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${
-            product.status === "Undetected" 
+            product.status === "Undetected"
               ? "bg-green-500/20 text-green-400"
               : product.status === "Detected"
               ? "bg-red-500/20 text-red-400"
