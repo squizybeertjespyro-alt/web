@@ -56,6 +56,18 @@ export function Footer() {
                   Contact us on Discord
                 </a>
               </li>
+              <li>
+                <a
+                  href={siteConfig.socials.trustpilot}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Leave a review on Trustpilot
+                </a>
+              </li>
+            
+          
             </ul>
           </div>
 
