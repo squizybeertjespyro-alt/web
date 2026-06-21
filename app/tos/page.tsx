@@ -12,7 +12,7 @@ export default function TermsPage() {
         {/* Header */}
         <div className="mb-12 text-center">
           <h1 className="mb-3 text-4xl font-bold tracking-tight text-white">
-            Terms of <span style={{ color: "#b100ff" }}>Service</span>
+            Terms of <span style={{ color: "#f2e100" }}>Service</span>
           </h1>
           <p className="text-sm text-muted-foreground">Last Updated: {new Date().toLocaleDateString("en-GB")}</p>
         </div>

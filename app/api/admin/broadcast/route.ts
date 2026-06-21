@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
           <div style="max-width:560px; margin:40px auto; padding:0 20px;">
             <div style="margin-bottom:32px;">
               <h1 style="font-size:24px; font-weight:700; margin:0 0 4px;">
-                ${siteConfig.name.slice(0, -6)}<span style="color:#b100ff;">${siteConfig.name.slice(-6)}</span>
+                ${siteConfig.name.slice(0, -6)}<span style="color:#f2e100;">${siteConfig.name.slice(-6)}</span>
               </h1>
               <p style="margin:0; color:#aaa; font-size:12px;">From: ${alias}@${domain}</p>
             </div>

@@ -51,7 +51,7 @@ export async function sendOrderConfirmationEmail({
                 .map(
                   (key) => `
                 <div style="background: #0a0a0a; border: 1px solid #333; border-radius: 6px; padding: 12px; margin-bottom: 8px;">
-                  <code style="font-family: monospace; font-size: 14px; color: #b100ff; letter-spacing: 0.05em; word-break: break-all;">${key}</code>
+                  <code style="font-family: monospace; font-size: 14px; color: #f2e100; letter-spacing: 0.05em; word-break: break-all;">${key}</code>
                 </div>`
                 )
                 .join("")}
@@ -67,7 +67,7 @@ export async function sendOrderConfirmationEmail({
       ${keyBlocks}
       <p style="margin: 16px 0 0; font-size: 12px; color: #666;">
         Keep this email safe — your license key(s) are unique to your order and cannot be reissued.
-        Need help? Contact us on <a href="${siteConfig.socials.discord}" style="color: #b100ff;">Discord</a>.
+        Need help? Contact us on <a href="${siteConfig.socials.discord}" style="color: #f2e100;">Discord</a>.
       </p>
     </div>`
     : `
@@ -88,7 +88,7 @@ export async function sendOrderConfirmationEmail({
 
         <div style="margin-bottom:32px;">
           <h1 style="font-size:24px; font-weight:700; margin:0 0 4px;">
-            ${siteConfig.name.slice(0, -6)}<span style="color:#b100ff;">${siteConfig.name.slice(-6)}</span>
+            ${siteConfig.name.slice(0, -6)}<span style="color:#f2e100;">${siteConfig.name.slice(-6)}</span>
           </h1>
           <p style="margin:0; color:#aaa; font-size:14px;">Order Confirmation & Product Delivery</p>
         </div>
@@ -112,7 +112,7 @@ export async function sendOrderConfirmationEmail({
           </table>
           <div style="margin-top:16px; padding-top:16px; border-top:1px solid #333; display:flex; justify-content:space-between; font-size:16px; font-weight:700;">
             <span>Total</span>
-            <span style="color:#b100ff;">${siteConfig.currency}${total.toFixed(2)}</span>
+            <span style="color:#f2e100;">${siteConfig.currency}${total.toFixed(2)}</span>
           </div>
         </div>
 
