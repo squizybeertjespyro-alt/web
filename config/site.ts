@@ -12,6 +12,7 @@ export const siteConfig = {
   // Your social links (leave empty "" if you don't have one)
   socials: {
     discord: "https://discord.gg/hardduckmarket", // perm link
+    trustpilot: "https://www.trustpilot.com/review/hardduckmarket.xyz", // perm link
     telegram: "",
     youtube: "",
   },
