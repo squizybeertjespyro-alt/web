@@ -46,7 +46,7 @@ export default function CheckoutPage() {
         .map((i) => `${i.productName} (${i.optionName}) x${i.quantity}`)
         .join(", ");
       const msg = encodeURIComponent(`Hi! I want to order: ${orderSummary} — Total: ${siteConfig.currency}${total.toFixed(2)}`);
-      window.open(`https://discord.gg/sTvRtUZBxR`, "_blank");
+      window.open(`https://discord.gg/hardduckmarket`, "_blank");
       return;
     }
 
