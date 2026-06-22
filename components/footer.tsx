@@ -90,6 +90,19 @@ export function Footer() {
                   <span className="sr-only">Discord</span>
                 </a>
               )}
+              {siteConfig.socials.trustpilot && (
+                <a
+                  href={siteConfig.socials.trustpilot}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
+                  >
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+                      <path d="M12 2.25l2.94 6.02 6.64.97-4.79 4.66 1.13 6.6L12 17.39l-5.92 3.11 1.13-6.6L2.42 9.24l6.64-.97L12 2.25z"/>
+                    </svg>
+                    <span className="sr-only">Trustpilot</span>
+                  </a>
+              )}
               {siteConfig.socials.telegram && (
                 <a
                   href={siteConfig.socials.telegram}
