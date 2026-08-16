@@ -104,7 +104,7 @@ export default function RobuxPage() {
               {PACKAGES.map((pkg) => (
                 <a
                   key={pkg.amount}
-                  href="https://discord.gg/sTvRtUZBxR"
+                  href="https://discord.gg/hardduckmarket"
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`flex items-center justify-between rounded-xl border p-4 transition-colors ${
@@ -131,7 +131,7 @@ export default function RobuxPage() {
               disabled={!inStock}
             >
               <a
-                href="https://discord.gg/sTvRtUZBxR"
+                href="https://discord.gg/hardduckmarket"
                 target="_blank"
                 rel="noopener noreferrer"
               >
