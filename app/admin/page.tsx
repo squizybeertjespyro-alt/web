@@ -47,6 +47,12 @@ export default function AdminPage() {
   const [broadcastLoading, setBroadcastLoading] = useState(false);
   const [broadcastResult, setBroadcastResult] = useState("");
 
+  // Robux
+  const [robuxAmount, setRobuxAmount] = useState("");
+  const [robuxLoading, setRobuxLoading] = useState(false);
+  const [robuxMessage, setRobuxMessage] = useState("");
+  const [currentRobux, setCurrentRobux] = useState<number | null>(null);
+
   const currentProduct = products.find((p) => p.id === selectedProduct);
   const currentTestProduct = products.find((p) => p.id === testProduct);
 
@@ -55,10 +61,23 @@ export default function AdminPage() {
     if (res.ok) { const data = await res.json(); setStock(data.stock); }
   };
 
+  const fetchRobux = async (key: string) => {
+    const res = await fetch("/api/admin/robux", { headers: { "x-admin-key": key } });
+    if (res.ok) {
+      const data = await res.json();
+      const total = data.stock.reduce((sum: number, item: { _count: { key: number } }) => sum + item._count.key, 0);
+      setCurrentRobux(total);
+    }
+  };
+
   const handleAuth = async () => {
     const res = await fetch("/api/admin/keys", { headers: { "x-admin-key": adminKey } });
-    if (res.ok) { setAuthed(true); const data = await res.json(); setStock(data.stock); }
-    else setMessage("❌ Wrong admin key");
+    if (res.ok) {
+      setAuthed(true);
+      const data = await res.json();
+      setStock(data.stock);
+      fetchRobux(adminKey);
+    } else setMessage("❌ Wrong admin key");
   };
 
   const handleAddKeys = async () => {
@@ -126,6 +145,23 @@ export default function AdminPage() {
     setBroadcastLoading(false);
   };
 
+  const handleSetRobux = async () => {
+    const amount = parseInt(robuxAmount);
+    if (isNaN(amount) || amount < 0) { setRobuxMessage("❌ Enter a valid number"); return; }
+    setRobuxLoading(true); setRobuxMessage("");
+    const res = await fetch("/api/admin/robux", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-admin-key": adminKey },
+      body: JSON.stringify({ amount }),
+    });
+    if (res.ok) {
+      setRobuxMessage(`✅ Robux stock set to ${amount.toLocaleString()} R$`);
+      setCurrentRobux(amount);
+      setRobuxAmount("");
+    } else setRobuxMessage("❌ Failed to update");
+    setRobuxLoading(false);
+  };
+
   if (!authed) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
@@ -147,7 +183,7 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-background text-foreground p-8">
       <div className="mx-auto max-w-4xl space-y-8">
-        <h1 className="text-2xl font-bold"> License Key Manager</h1>
+        <h1 className="text-2xl font-bold">🔑 License Key Manager</h1>
 
         {/* Stock */}
         <div className="cyber-card">
@@ -171,9 +207,40 @@ export default function AdminPage() {
           )}
         </div>
 
+        {/* Robux stock */}
+        <div className="cyber-card space-y-4" style={{ border: "1px solid rgba(160,0,255,0.5)" }}>
+          <h2 className="text-lg font-semibold">💎 Robux Stock</h2>
+          <p className="text-sm text-muted-foreground">
+            Set how many Robux you currently have available. This shows on the website and Discord bot.
+          </p>
+          <div className="flex items-center gap-3 rounded-lg border border-border bg-background p-3">
+            <span className="text-sm text-muted-foreground">Current stock:</span>
+            <span className={`font-bold ${currentRobux === null ? "text-muted-foreground" : currentRobux > 0 ? "text-green-400" : "text-red-400"}`}>
+              {currentRobux === null ? "Loading..." : `${currentRobux.toLocaleString()} R$`}
+            </span>
+          </div>
+          <div className="flex gap-3">
+            <Input
+              type="number"
+              placeholder="e.g. 10000"
+              value={robuxAmount}
+              onChange={(e) => setRobuxAmount(e.target.value)}
+              className="flex-1"
+            />
+            <Button onClick={handleSetRobux} disabled={robuxLoading}>
+              {robuxLoading ? "Saving..." : "Set Stock"}
+            </Button>
+          </div>
+          {robuxMessage && (
+            <p className="text-sm font-medium" style={{ color: robuxMessage.startsWith("✅") ? "#4ade80" : "#f87171" }}>
+              {robuxMessage}
+            </p>
+          )}
+        </div>
+
         {/* Test email */}
         <div className="cyber-card space-y-4" style={{ border: "1px solid rgba(160,0,255,0.5)" }}>
-          <h2 className="text-lg font-semibold"> Send Test Email (Free)</h2>
+          <h2 className="text-lg font-semibold">🧪 Send Test Email (Free)</h2>
           <p className="text-sm text-muted-foreground">Creates a fake order and sends the email with a key instantly — no payment needed.</p>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
@@ -203,7 +270,7 @@ export default function AdminPage() {
 
         {/* Manual fulfill */}
         <div className="cyber-card space-y-4">
-          <h2 className="text-lg font-semibold"> Manually Fulfill Real Order</h2>
+          <h2 className="text-lg font-semibold">⚡ Manually Fulfill Real Order</h2>
           <p className="text-sm text-muted-foreground">If a customer paid but didn't get their email, paste their order ID here to resend it.</p>
           <div className="space-y-2">
             <Label>Order ID</Label>
@@ -217,7 +284,7 @@ export default function AdminPage() {
 
         {/* Broadcast */}
         <div className="cyber-card space-y-4" style={{ border: "1px solid rgba(160,0,255,0.5)" }}>
-          <h2 className="text-lg font-semibold"> Send Broadcast Email</h2>
+          <h2 className="text-lg font-semibold">📢 Send Broadcast Email</h2>
           <p className="text-sm text-muted-foreground">Send a promotional or announcement email. One email address per line.</p>
           <div className="space-y-2">
             <Label>Send from</Label>
@@ -228,19 +295,17 @@ export default function AdminPage() {
           </div>
           <div className="space-y-2">
             <Label>Recipients (one per line)</Label>
-            <textarea
-              className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground font-mono min-h-[100px]"
+            <textarea className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground font-mono min-h-[100px]"
               placeholder={"customer1@example.com\ncustomer2@example.com"}
               value={broadcastTo} onChange={(e) => setBroadcastTo(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label>Subject</Label>
-            <Input placeholder="for example: New products just dropped!" value={broadcastSubject} onChange={(e) => setBroadcastSubject(e.target.value)} />
+            <Input placeholder="e.g. 🔥 New products just dropped!" value={broadcastSubject} onChange={(e) => setBroadcastSubject(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label>Message</Label>
-            <textarea
-              className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground min-h-[150px]"
+            <textarea className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground min-h-[150px]"
               placeholder="Write your message here..."
               value={broadcastMessage} onChange={(e) => setBroadcastMessage(e.target.value)} />
           </div>
@@ -271,8 +336,7 @@ export default function AdminPage() {
           </div>
           <div className="space-y-2">
             <Label>Keys (one per line)</Label>
-            <textarea
-              className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground font-mono min-h-[150px]"
+            <textarea className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground font-mono min-h-[150px]"
               placeholder={"XXXX-XXXX-XXXX-XXXX\nYYYY-YYYY-YYYY-YYYY"}
               value={keysInput} onChange={(e) => setKeysInput(e.target.value)} />
           </div>
