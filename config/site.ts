@@ -7,7 +7,7 @@ export const siteConfig = {
   name: "Hardduckmarket",
 
   // Short description for search engines
-  description: "Best Gaming Products for Your Favorite Games",
+  description: "Shop gaming products, game cheats, mod menus, Roblox products and more at Hardduckmarket.",
 
   // Your social links (leave empty "" if you don't have one)
   socials: {

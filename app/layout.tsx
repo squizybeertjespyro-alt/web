@@ -10,7 +10,7 @@ import "./cyber.css"
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: `${siteConfig.name} - Shop`,
+  title: "Hardduckmarket - Gaming Products & Digital Goods",
   description: siteConfig.description,
   icons: {
     icon: "/favicon.ico",
