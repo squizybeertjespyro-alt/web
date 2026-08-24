@@ -48,7 +48,7 @@ ${urls
   return new Response(xml, {
     status: 200,
     headers: {
-      "Content-Type": "text/xml; charset=utf-8",
+      "Content-Type": "text/plain; charset=utf-8",
       "Cache-Control": "public, max-age=0, must-revalidate",
     },
   });
