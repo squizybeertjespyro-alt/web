@@ -27,6 +27,24 @@ export const products: Product[] = [
   // ============================================
   // GTA V PRODUCTS
   // ============================================
+   {
+  id: "yari",
+  name: "Yari",
+  image: "/images/yari.png",
+  slug: "yari-mod-menu-gtav",
+  gameSlug: "gtav-cheats",
+  shortDescription: "The best GTA V Enhanced mod menu",
+  fullDescription: "Yari is a powerful and feature-rich mod menu for Grand Theft Auto V, built for the latest Enhanced & Expanded editions. It offers advanced GTA V modding features, a powerful Lua API, vehicle and player modifications, custom themes, community file sharing, and BattlEye bypass technology. With regular updates and 24/7 support, Yari delivers a powerful and stable GTA V modding experience.",
+  status: "Undetected",
+  onSale: false,
+  options: [
+    { name: "7 Days", price: 6.99, inStock: false },
+    { name: "30 Days", price: 24.99, inStock: false },
+    { name: "60 Days", price: 44.99, inStock: false },
+    { name: "90 Days", price: 59.99, inStock: false },
+    { name: "Lifetime", price: 109.99, inStock: false },
+  ],
+  },
   {
     id: "cherax",
     name: "Cherax",
