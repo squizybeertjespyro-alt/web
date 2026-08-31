@@ -4,22 +4,22 @@ import { siteConfig } from "@/config/site";
 
 const resend = new Resend(process.env.RESEND_API_KEY ?? "placeholder");
 
+const ADMIN_ONLY_EMAILS = ["owner"];
+
 const ALLOWED_FROM_EMAILS = [
-  "co-owner",
   "orders",
   "support",
   "noreply",
-  "owner",
+  "co-owner",
   "marketing",
 ];
 
 export async function POST(req: NextRequest) {
   const adminKey = req.headers.get("x-admin-key");
-  
-  // Accept either ADMIN_SECRET or STAFF_SECRET
+
   const isAdmin = adminKey === process.env.ADMIN_SECRET;
   const isStaff = adminKey === process.env.STAFF_SECRET;
-  
+
   if (!isAdmin && !isStaff) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -30,7 +30,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }
 
-  const alias = ALLOWED_FROM_EMAILS.includes(fromAlias) ? fromAlias : "orders";
+  // Owner email only allowed for admin
+  if (ADMIN_ONLY_EMAILS.includes(fromAlias) && !isAdmin) {
+    return NextResponse.json({ error: "Unauthorized to use this email" }, { status: 401 });
+  }
+
+  const allAllowed = isAdmin
+    ? [...ALLOWED_FROM_EMAILS, ...ADMIN_ONLY_EMAILS]
+    : ALLOWED_FROM_EMAILS;
+
+  const alias = allAllowed.includes(fromAlias) ? fromAlias : "orders";
   const domain = process.env.EMAIL_DOMAIN ?? "hardduckmarket.xyz";
   const fromEmail = `${siteConfig.name} <${alias}@${domain}>`;
 
