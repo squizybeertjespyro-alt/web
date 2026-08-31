@@ -74,7 +74,7 @@ export default function StaffMailPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
         <div className="cyber-card w-full max-w-sm space-y-4 p-8">
-          <h1 className="text-xl font-bold text-center">📧 Staff Mail</h1>
+          <h1 className="text-xl font-bold text-center"> Staff Mail</h1>
           <p className="text-sm text-muted-foreground text-center">Enter your staff key to access</p>
           <div className="space-y-2">
             <Label>Staff Key</Label>
@@ -96,7 +96,7 @@ export default function StaffMailPage() {
   return (
     <div className="min-h-screen bg-background text-foreground p-8">
       <div className="mx-auto max-w-2xl space-y-6">
-        <h1 className="text-2xl font-bold">📧 Staff Mailing</h1>
+        <h1 className="text-2xl font-bold"> Staff Mailing</h1>
         <p className="text-sm text-muted-foreground">Send promotional or announcement emails to customers.</p>
 
         <div className="cyber-card space-y-5">
@@ -126,7 +126,7 @@ export default function StaffMailPage() {
           <div className="space-y-2">
             <Label>Subject</Label>
             <Input
-              placeholder="e.g. 🔥 New products just dropped!"
+              placeholder="e.g.  New products just dropped!"
               value={broadcastSubject}
               onChange={(e) => setBroadcastSubject(e.target.value)}
             />
