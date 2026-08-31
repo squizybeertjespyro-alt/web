@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 const FROM_EMAILS = [
+  { value: "co-owner", label: "co-owner@hardduckmarket.xyz" },
   { value: "orders", label: "orders@hardduckmarket.xyz" },
   { value: "support", label: "support@hardduckmarket.xyz" },
   { value: "noreply", label: "noreply@hardduckmarket.xyz" },

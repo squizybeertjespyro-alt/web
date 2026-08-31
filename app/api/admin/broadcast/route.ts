@@ -5,6 +5,7 @@ import { siteConfig } from "@/config/site";
 const resend = new Resend(process.env.RESEND_API_KEY ?? "placeholder");
 
 const ALLOWED_FROM_EMAILS = [
+  "co-owner",
   "orders",
   "support",
   "noreply",
