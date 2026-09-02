@@ -27,7 +27,22 @@ export const products: Product[] = [
   // ============================================
   // GTA V PRODUCTS
   // ============================================
-   {
+  {
+  id: "ovix",
+  name: "Ovix",
+  image: "/images/ovix.png",
+  slug: "ovix-mod-menu-gtav",
+  gameSlug: "gtav-cheats",
+  shortDescription: "The best GTA V Enhanced mod menu",
+  fullDescription: "Ovix is a premium, feature-packed mod menu built for Grand Theft Auto V, delivering a refined and powerful modding experience across the latest Enhanced & Expanded editions. Packed with an extensive suite of advanced player and vehicle features, deep customization, scripting capabilities, custom themes, and community-driven functionality, Ovix gives you complete control over your GTA V experience.Engineered with performance, stability, and usability in mind, Ovix combines a sleek interface with powerful features and continuous development. With regular updates and dedicated support, Ovix is built to provide a reliable, modern, and premium GTA V modding experience.",
+  status: "Undetected",
+  onSale: false,
+  options: [
+    { name: "Lifetime", price: 4.99, inStock: false },
+  ],
+  },
+  {
+  
   id: "yari",
   name: "Yari",
   image: "/images/yari.png",
