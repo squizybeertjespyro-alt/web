@@ -45,7 +45,7 @@ export const products: Product[] = [
   
   id: "yari",
   name: "Yari",
-  image: "/images/yari.png",
+  image: "/images/yari.webp",
   slug: "yari-mod-menu-gtav",
   gameSlug: "gtav-cheats",
   shortDescription: "The best GTA V Enhanced mod menu",
