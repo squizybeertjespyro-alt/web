@@ -1,18 +1,18 @@
-import { PrismaClient } from "@prisma/client";
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const productId = searchParams.get("productId");
+  const optionName = searchParams.get("optionName");
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    log: ["error"],
-    datasources: {
-      db: {
-        url: process.env.DATABASE_URL,
-      },
-    },
+  if (!productId || !optionName) {
+    return NextResponse.json({ error: "Missing params" }, { status: 400 });
+  }
+
+  const count = await prisma.licenseKey.count({
+    where: { productId, optionName, used: false },
   });
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+  return NextResponse.json({ inStock: count > 0, count });
+}
