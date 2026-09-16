@@ -27,7 +27,6 @@ interface ElementsInstance {
 
 interface StripeElement {
   mount: (el: HTMLElement) => void;
-  destroy: () => void;
 }
 
 export default function PaymentPage() {
@@ -38,16 +37,18 @@ export default function PaymentPage() {
   const [ready, setReady] = useState(false);
   const elementsRef = useRef<ElementsInstance | null>(null);
   const stripeRef = useRef<StripeInstance | null>(null);
-  const mountedRef = useRef(false);
+  const paymentElementRef = useRef<HTMLDivElement>(null);
+  const initialized = useRef(false);
 
   useEffect(() => {
+    if (initialized.current) return;
+
     const clientSecret = sessionStorage.getItem("stripe_client_secret");
     if (!clientSecret) { router.push("/checkout"); return; }
 
-    const script = document.createElement("script");
-    script.src = "https://js.stripe.com/v3/";
-    script.onload = () => {
-      if (!window.Stripe) return;
+    const initStripe = () => {
+      if (!window.Stripe || !paymentElementRef.current) return;
+
       const stripe = window.Stripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
       stripeRef.current = stripe;
 
@@ -60,21 +61,35 @@ export default function PaymentPage() {
             colorBackground: "#111",
             colorText: "#ffffff",
             borderRadius: "8px",
-          }
+          },
         },
       });
       elementsRef.current = elements;
 
       const paymentEl = elements.create("payment");
-      const container = document.getElementById("payment-element");
-      if (container && !mountedRef.current) {
-        paymentEl.mount(container);
-        mountedRef.current = true;
-        setReady(true);
-      }
+      paymentEl.mount(paymentElementRef.current);
+      initialized.current = true;
+      setReady(true);
     };
-    document.head.appendChild(script);
-    return () => { document.head.removeChild(script); };
+
+    const loadStripe = () => {
+      if (window.Stripe) { initStripe(); return; }
+
+      if (document.querySelector('script[src="https://js.stripe.com/v3/"]')) {
+        const check = setInterval(() => {
+          if (window.Stripe) { clearInterval(check); initStripe(); }
+        }, 100);
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = "https://js.stripe.com/v3/";
+      script.async = true;
+      script.onload = initStripe;
+      document.head.appendChild(script);
+    };
+
+    setTimeout(loadStripe, 100);
   }, [router]);
 
   const handleSubmit = async () => {
@@ -114,13 +129,12 @@ export default function PaymentPage() {
         </p>
 
         <div className="rounded-xl border border-border bg-card p-6">
-          <div id="payment-element" className="min-h-[200px]">
-            {!ready && (
-              <div className="flex h-48 items-center justify-center text-muted-foreground text-sm">
-                Loading payment form…
-              </div>
-            )}
-          </div>
+          {!ready && (
+            <div className="flex h-48 items-center justify-center text-muted-foreground text-sm">
+              Loading payment form…
+            </div>
+          )}
+          <div ref={paymentElementRef} className={ready ? "" : "hidden"} />
 
           {error && (
             <div className="mt-4 rounded-lg bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive">
@@ -128,12 +142,7 @@ export default function PaymentPage() {
             </div>
           )}
 
-          <Button
-            onClick={handleSubmit}
-            disabled={loading || !ready}
-            size="lg"
-            className="mt-6 w-full"
-          >
+          <Button onClick={handleSubmit} disabled={loading || !ready} size="lg" className="mt-6 w-full">
             <Lock className="mr-2 h-4 w-4" />
             {loading ? "Processing…" : `Pay ${siteConfig.currency}${total.toFixed(2)}`}
           </Button>
