@@ -1,158 +1,225 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useCart } from "@/context/cart-context";
+import { useAuth } from "@/context/auth-context";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
-import { useCart } from "@/context/cart-context";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { siteConfig } from "@/config/site";
-import { Lock } from "lucide-react";
+import Link from "next/link";
+import { ShoppingBag, Bitcoin, Lock, MessageCircle, CreditCard } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-declare global {
-  interface Window {
-    Stripe?: (key: string) => StripeInstance;
-  }
-}
+type PayMethod = "card" | "crypto" | "discord";
 
-interface StripeInstance {
-  elements: (opts: object) => ElementsInstance;
-  confirmPayment: (opts: object) => Promise<{ error?: { message: string } }>;
-}
-
-interface ElementsInstance {
-  create: (type: string, opts?: object) => StripeElement;
-  submit: () => Promise<{ error?: { message: string } }>;
-}
-
-interface StripeElement {
-  mount: (el: HTMLElement) => void;
-}
-
-export default function PaymentPage() {
+export default function CheckoutPage() {
+  const { items, total, clearCart } = useCart();
+  const { user } = useAuth();
   const router = useRouter();
-  const { total, clearCart } = useCart();
+
+  const [email, setEmail] = useState(user?.email ?? "");
+  const [payMethod, setPayMethod] = useState<PayMethod>("card");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [ready, setReady] = useState(false);
-  const elementsRef = useRef<ElementsInstance | null>(null);
-  const stripeRef = useRef<StripeInstance | null>(null);
-  const initialized = useRef(false);
 
-  useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
+  if (!items.length) {
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <Header />
+        <main className="mx-auto max-w-xl px-4 py-20 text-center">
+          <ShoppingBag className="mx-auto mb-4 h-14 w-14 text-muted-foreground" />
+          <h1 className="mb-3 text-xl font-bold">Your cart is empty</h1>
+          <Button asChild><Link href="/shop">Go Shopping</Link></Button>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
-    const clientSecret = sessionStorage.getItem("stripe_client_secret");
-    if (!clientSecret) { router.push("/checkout"); return; }
-
-    const initStripe = () => {
-      if (!window.Stripe) return;
-      const stripe = window.Stripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
-      stripeRef.current = stripe;
-
-      const elements = stripe.elements({
-        clientSecret,
-        appearance: {
-          theme: "night",
-          variables: {
-            colorPrimary: "#b100ff",
-            colorBackground: "#111",
-            colorText: "#ffffff",
-            borderRadius: "8px",
-          },
-        },
-      });
-      elementsRef.current = elements;
-
-      const paymentEl = elements.create("payment");
-      const container = document.getElementById("payment-element");
-      if (container) {
-        paymentEl.mount(container);
-        setReady(true);
-      }
-    };
-
-    // Check if Stripe is already loaded
-    if (window.Stripe) {
-      initStripe();
-      return;
-    }
-
-    // Check if script already exists
-    if (document.querySelector('script[src="https://js.stripe.com/v3/"]')) {
-      const checkStripe = setInterval(() => {
-        if (window.Stripe) { clearInterval(checkStripe); initStripe(); }
-      }, 100);
-      return;
-    }
-
-    // Add new script
-    const script = document.createElement("script");
-    script.src = "https://js.stripe.com/v3/";
-    script.async = true;
-    script.onload = initStripe;
-    document.head.appendChild(script);
-  }, [router]);
-
-  const handleSubmit = async () => {
-    if (!stripeRef.current || !elementsRef.current) return;
-    setLoading(true);
+  const handleCheckout = async () => {
     setError("");
 
-    const { error: submitError } = await elementsRef.current.submit();
-    if (submitError) { setError(submitError.message ?? "Validation failed"); setLoading(false); return; }
+    if (payMethod === "discord") {
+      window.open(`https://discord.gg/hardduckmarket`, "_blank");
+      return;
+    }
 
-    const orderId = sessionStorage.getItem("pending_order_id");
+    if (!email && !user) { setError("Please enter your email address."); return; }
 
-    const { error: confirmError } = await stripeRef.current.confirmPayment({
-      elements: elementsRef.current,
-      confirmParams: {
-        return_url: `${window.location.origin}/order-success?orderId=${orderId}`,
-      },
-    });
-
-    if (confirmError) {
-      setError(confirmError.message ?? "Payment failed");
+    setLoading(true);
+    try {
+      if (payMethod === "card") {
+        const res = await fetch("/api/checkout/stripe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ items, email: user?.email ?? email }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        sessionStorage.setItem("stripe_client_secret", data.clientSecret);
+        sessionStorage.setItem("pending_order_id", data.orderId);
+        router.push("/checkout/payment");
+      } else {
+        const res = await fetch("/api/checkout/crypto", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ items, email: user?.email ?? email }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        clearCart();
+        window.location.href = data.hostedUrl;
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Checkout failed. Please try again.");
+    } finally {
       setLoading(false);
-    } else {
-      clearCart();
-      sessionStorage.removeItem("stripe_client_secret");
-      sessionStorage.removeItem("pending_order_id");
     }
   };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
-      <main className="mx-auto max-w-lg px-4 py-12">
-        <h1 className="mb-2 text-2xl font-bold">Complete Payment</h1>
-        <p className="mb-8 text-sm text-muted-foreground">
-          Total: <span className="font-semibold text-foreground">{siteConfig.currency}{total.toFixed(2)}</span>
-        </p>
+      <main className="mx-auto max-w-5xl px-4 py-10 lg:px-8">
+        <h1 className="mb-8 text-2xl font-bold">Checkout</h1>
 
-        <div className="rounded-xl border border-border bg-card p-6">
-          <div id="payment-element" className="min-h-[200px]">
-            {!ready && (
-              <div className="flex h-48 items-center justify-center text-muted-foreground text-sm">
-                Loading payment form…
+        <div className="grid gap-8 lg:grid-cols-3">
+          <div className="space-y-8 lg:col-span-2">
+
+            {/* Email */}
+            {payMethod !== "discord" && (
+              <div className="rounded-xl border border-border bg-card p-6">
+                <h2 className="mb-4 text-base font-semibold">Contact</h2>
+                {user ? (
+                  <p className="text-sm text-muted-foreground">
+                    Ordering as <span className="text-foreground font-medium">{user.email}</span>
+                    {" "}— <Link href="/api/auth/logout" className="text-primary underline">Not you?</Link>
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email address</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Your order confirmation and license key will be sent here.{" "}
+                      <Link href="/login" className="text-primary underline">Have an account?</Link>
+                    </p>
+                  </div>
+                )}
               </div>
             )}
+
+            {/* Payment method */}
+            <div className="rounded-xl border border-border bg-card p-6">
+              <h2 className="mb-4 text-base font-semibold">Payment Method</h2>
+              <div className="grid grid-cols-3 gap-3">
+                <button
+                  onClick={() => setPayMethod("card")}
+                  className={`flex flex-col items-center gap-2 rounded-lg border p-4 text-center transition-colors ${
+                    payMethod === "card"
+                      ? "border-primary bg-primary/10"
+                      : "border-border hover:border-primary/50"
+                  }`}
+                >
+                  <CreditCard className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-sm font-medium">Card</p>
+                    <p className="text-xs text-muted-foreground">Visa, Apple Pay…</p>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => setPayMethod("crypto")}
+                  className={`flex flex-col items-center gap-2 rounded-lg border p-4 text-center transition-colors ${
+                    payMethod === "crypto"
+                      ? "border-primary bg-primary/10"
+                      : "border-border hover:border-primary/50"
+                  }`}
+                >
+                  <Bitcoin className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-sm font-medium">Crypto</p>
+                    <p className="text-xs text-muted-foreground">BTC, ETH…</p>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => setPayMethod("discord")}
+                  className={`flex flex-col items-center gap-2 rounded-lg border p-4 text-center transition-colors ${
+                    payMethod === "discord"
+                      ? "border-primary bg-primary/10"
+                      : "border-border hover:border-primary/50"
+                  }`}
+                >
+                  <MessageCircle className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-sm font-medium">PayPal</p>
+                    <p className="text-xs text-muted-foreground">via Discord</p>
+                  </div>
+                </button>
+              </div>
+
+              {payMethod === "card" && (
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Pay securely with your card, Apple Pay or Google Pay via Stripe.
+                </p>
+              )}
+              {payMethod === "crypto" && (
+                <p className="mt-3 text-xs text-muted-foreground">
+                  You'll be redirected to NOWPayments to complete your payment securely.
+                </p>
+              )}
+              {payMethod === "discord" && (
+                <p className="mt-3 text-xs text-muted-foreground">
+                  You'll be redirected to our Discord. Open a ticket and we'll process your PayPal payment manually.
+                </p>
+              )}
+            </div>
+
+            {error && (
+              <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive">
+                {error}
+              </div>
+            )}
+
+            <Button onClick={handleCheckout} disabled={loading} size="lg" className="w-full">
+              <Lock className="mr-2 h-4 w-4" />
+              {loading
+                ? "Processing…"
+                : payMethod === "discord"
+                ? "Continue to Discord"
+                : payMethod === "crypto"
+                ? `Pay with Crypto — ${siteConfig.currency}${total.toFixed(2)}`
+                : `Continue to Payment — ${siteConfig.currency}${total.toFixed(2)}`}
+            </Button>
           </div>
 
-          {error && (
-            <div className="mt-4 rounded-lg bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive">
-              {error}
+          {/* Summary */}
+          <div className="h-fit rounded-xl border border-border bg-card p-6">
+            <h2 className="mb-4 text-base font-semibold">Order Summary</h2>
+            <div className="space-y-3">
+              {items.map((item) => (
+                <div key={`${item.productId}-${item.optionName}`} className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    {item.productName} ({item.optionName}) × {item.quantity}
+                  </span>
+                  <span>{siteConfig.currency}{(item.price * item.quantity).toFixed(2)}</span>
+                </div>
+              ))}
             </div>
-          )}
-
-          <Button onClick={handleSubmit} disabled={loading || !ready} size="lg" className="mt-6 w-full">
-            <Lock className="mr-2 h-4 w-4" />
-            {loading ? "Processing…" : `Pay ${siteConfig.currency}${total.toFixed(2)}`}
-          </Button>
-          <p className="mt-3 text-center text-xs text-muted-foreground">
-            Secured by Stripe. Apple Pay and Google Pay supported on compatible devices.
-          </p>
+            <div className="my-4 border-t border-border pt-4 flex justify-between font-bold">
+              <span>Total</span>
+              <span className="text-primary">{siteConfig.currency}{total.toFixed(2)}</span>
+            </div>
+          </div>
         </div>
       </main>
       <Footer />
