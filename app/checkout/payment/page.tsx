@@ -44,7 +44,6 @@ export default function PaymentPage() {
     const clientSecret = sessionStorage.getItem("stripe_client_secret");
     if (!clientSecret) { router.push("/checkout"); return; }
 
-    // Load Stripe.js
     const script = document.createElement("script");
     script.src = "https://js.stripe.com/v3/";
     script.onload = () => {
@@ -54,7 +53,15 @@ export default function PaymentPage() {
 
       const elements = stripe.elements({
         clientSecret,
-        appearance: { theme: "night", variables: { colorPrimary: "#a3e635" } },
+        appearance: {
+          theme: "night",
+          variables: {
+            colorPrimary: "#b100ff",
+            colorBackground: "#111",
+            colorText: "#ffffff",
+            borderRadius: "8px",
+          }
+        },
       });
       elementsRef.current = elements;
 
@@ -131,7 +138,7 @@ export default function PaymentPage() {
             {loading ? "Processing…" : `Pay ${siteConfig.currency}${total.toFixed(2)}`}
           </Button>
           <p className="mt-3 text-center text-xs text-muted-foreground">
-            Secured by Stripe. Your card details are never stored by us.
+            Secured by Stripe. Apple Pay and Google Pay supported on compatible devices.
           </p>
         </div>
       </main>

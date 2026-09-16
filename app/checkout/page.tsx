@@ -10,16 +10,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { siteConfig } from "@/config/site";
 import Link from "next/link";
-import { ShoppingBag, Bitcoin, Lock, MessageCircle } from "lucide-react";
+import { ShoppingBag, Bitcoin, Lock, MessageCircle, CreditCard } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-type PayMethod = "crypto" | "discord";
+type PayMethod = "card" | "crypto" | "discord";
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
   const { user } = useAuth();
+  const router = useRouter();
 
   const [email, setEmail] = useState(user?.email ?? "");
-  const [payMethod, setPayMethod] = useState<PayMethod>("crypto");
+  const [payMethod, setPayMethod] = useState<PayMethod>("card");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -41,28 +43,36 @@ export default function CheckoutPage() {
     setError("");
 
     if (payMethod === "discord") {
-      // Build a message with the order details
-      const orderSummary = items
-        .map((i) => `${i.productName} (${i.optionName}) x${i.quantity}`)
-        .join(", ");
-      const msg = encodeURIComponent(`Hi! I want to order: ${orderSummary} — Total: ${siteConfig.currency}${total.toFixed(2)}`);
       window.open(`https://discord.gg/hardduckmarket`, "_blank");
       return;
     }
 
-    if (!email) { setError("Please enter your email address."); return; }
+    if (!email && !user) { setError("Please enter your email address."); return; }
 
     setLoading(true);
     try {
-      const res = await fetch("/api/checkout/crypto", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items, email }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      clearCart();
-      window.location.href = data.hostedUrl;
+      if (payMethod === "card") {
+        const res = await fetch("/api/checkout/stripe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ items, email: user?.email ?? email }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        sessionStorage.setItem("stripe_client_secret", data.clientSecret);
+        sessionStorage.setItem("pending_order_id", data.orderId);
+        router.push("/checkout/payment");
+      } else {
+        const res = await fetch("/api/checkout/crypto", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ items, email: user?.email ?? email }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        clearCart();
+        window.location.href = data.hostedUrl;
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Checkout failed. Please try again.");
     } finally {
@@ -79,8 +89,8 @@ export default function CheckoutPage() {
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="space-y-8 lg:col-span-2">
 
-            {/* Email — only needed for crypto */}
-            {payMethod === "crypto" && (
+            {/* Email */}
+            {payMethod !== "discord" && (
               <div className="rounded-xl border border-border bg-card p-6">
                 <h2 className="mb-4 text-base font-semibold">Contact</h2>
                 {user ? (
@@ -110,38 +120,58 @@ export default function CheckoutPage() {
             {/* Payment method */}
             <div className="rounded-xl border border-border bg-card p-6">
               <h2 className="mb-4 text-base font-semibold">Payment Method</h2>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
+                <button
+                  onClick={() => setPayMethod("card")}
+                  className={`flex flex-col items-center gap-2 rounded-lg border p-4 text-center transition-colors ${
+                    payMethod === "card"
+                      ? "border-primary bg-primary/10"
+                      : "border-border hover:border-primary/50"
+                  }`}
+                >
+                  <CreditCard className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-sm font-medium">Card</p>
+                    <p className="text-xs text-muted-foreground">Visa, Apple Pay…</p>
+                  </div>
+                </button>
+
                 <button
                   onClick={() => setPayMethod("crypto")}
-                  className={`flex items-center gap-3 rounded-lg border p-4 text-left transition-colors ${
+                  className={`flex flex-col items-center gap-2 rounded-lg border p-4 text-center transition-colors ${
                     payMethod === "crypto"
                       ? "border-primary bg-primary/10"
                       : "border-border hover:border-primary/50"
                   }`}
                 >
-                  <Bitcoin className="h-5 w-5 text-primary flex-shrink-0" />
+                  <Bitcoin className="h-5 w-5 text-primary" />
                   <div>
                     <p className="text-sm font-medium">Crypto</p>
-                    <p className="text-xs text-muted-foreground">BTC, ETH, USDT…</p>
+                    <p className="text-xs text-muted-foreground">BTC, ETH…</p>
                   </div>
                 </button>
 
                 <button
                   onClick={() => setPayMethod("discord")}
-                  className={`flex items-center gap-3 rounded-lg border p-4 text-left transition-colors ${
+                  className={`flex flex-col items-center gap-2 rounded-lg border p-4 text-center transition-colors ${
                     payMethod === "discord"
                       ? "border-primary bg-primary/10"
                       : "border-border hover:border-primary/50"
                   }`}
                 >
-                  <MessageCircle className="h-5 w-5 text-primary flex-shrink-0" />
+                  <MessageCircle className="h-5 w-5 text-primary" />
                   <div>
-                    <p className="text-sm font-medium">PayPal or other methods</p>
+                    <p className="text-sm font-medium">PayPal</p>
                     <p className="text-xs text-muted-foreground">via Discord</p>
                   </div>
                 </button>
               </div>
 
+              {payMethod === "card" && (
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Pay securely with your card, Apple Pay or Google Pay via Stripe.
+                </p>
+              )}
               {payMethod === "crypto" && (
                 <p className="mt-3 text-xs text-muted-foreground">
                   You'll be redirected to NOWPayments to complete your payment securely.
@@ -149,7 +179,7 @@ export default function CheckoutPage() {
               )}
               {payMethod === "discord" && (
                 <p className="mt-3 text-xs text-muted-foreground">
-                  You'll be redirected to our Discord server. Open a ticket and we'll process your PayPal or other payment manually.
+                  You'll be redirected to our Discord. Open a ticket and we'll process your PayPal payment manually.
                 </p>
               )}
             </div>
@@ -166,7 +196,9 @@ export default function CheckoutPage() {
                 ? "Processing…"
                 : payMethod === "discord"
                 ? "Continue to Discord"
-                : `Pay with Crypto — ${siteConfig.currency}${total.toFixed(2)}`}
+                : payMethod === "crypto"
+                ? `Pay with Crypto — ${siteConfig.currency}${total.toFixed(2)}`
+                : `Continue to Payment — ${siteConfig.currency}${total.toFixed(2)}`}
             </Button>
           </div>
 
