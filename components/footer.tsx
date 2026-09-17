@@ -32,6 +32,11 @@ export function Footer() {
                   Shop
                 </Link>
               </li>
+              <li>
+                <Link href="/docs" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+                  Documentation
+                </Link>
+              </li>
             </ul>
           </div>
 

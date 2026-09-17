@@ -6,7 +6,7 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { CheckCircle, Mail, Package } from "lucide-react";
+import { CheckCircle, Mail, Package, BookOpen } from "lucide-react";
 import { siteConfig } from "@/config/site";
 
 export default function OrderSuccessPage() {
@@ -15,7 +15,6 @@ export default function OrderSuccessPage() {
   const [cleared, setCleared] = useState(false);
 
   useEffect(() => {
-    // Clear cart on success
     if (!cleared) {
       localStorage.removeItem("cart");
       sessionStorage.removeItem("stripe_client_secret");
@@ -53,10 +52,27 @@ export default function OrderSuccessPage() {
             <div>
               <p className="font-medium">Check your email</p>
               <p className="text-sm text-muted-foreground">
-                Your order confirmation and product will be sent to your email address shortly.
+                Your order confirmation and license key will be sent to your email address shortly.
               </p>
             </div>
           </div>
+
+          <div className="flex gap-4 rounded-xl border border-border bg-card p-4">
+            <BookOpen className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
+            <div>
+              <p className="font-medium">How to activate your product</p>
+              <p className="text-sm text-muted-foreground mb-2">
+                Check our documentation for step-by-step activation and download instructions.
+              </p>
+              <Link
+                href="/docs"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary underline hover:opacity-80"
+              >
+                📖 View Documentation →
+              </Link>
+            </div>
+          </div>
+
           <div className="flex gap-4 rounded-xl border border-border bg-card p-4">
             <Package className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
             <div>
@@ -77,7 +93,10 @@ export default function OrderSuccessPage() {
           </div>
         </div>
 
-        <div className="flex gap-3 justify-center">
+        <div className="flex gap-3 justify-center flex-wrap">
+          <Button asChild variant="outline">
+            <Link href="/docs"> Documentation</Link>
+          </Button>
           <Button asChild variant="outline">
             <Link href="/account">View Orders</Link>
           </Button>

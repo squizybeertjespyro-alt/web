@@ -69,7 +69,12 @@ export async function sendOrderConfirmationEmail({
         Keep this email safe — your license key(s) are unique to your order and cannot be reissued.
         Need help? Contact us on <a href="${siteConfig.socials.discord}" style="color: #f2e100;">Discord</a>.
       </p>
-    </div>`
+    </div>
+    <div style="margin-top:16px; padding:16px; background:#0a0a0a; border:1px solid #333; border-radius:8px; text-align:center;">
+  <a href="https://hardduckmarket.xyz/docs" style="color:#f2e100; font-size:14px; font-weight:600; text-decoration:none;">
+     How to activate your product → hardduckmarket.xyz/docs
+  </a>
+</div>`
     : `
     <div style="margin-top:32px; padding:24px; background:#111; border:1px solid #333; border-radius:8px;">
       <p style="margin:0; color:#aaa;">Your product will be delivered shortly. If you have any questions, contact us on Discord.</p>
