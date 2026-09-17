@@ -95,7 +95,7 @@ export default function OrderSuccessPage() {
 
         <div className="flex gap-3 justify-center flex-wrap">
           <Button asChild variant="outline">
-            <Link href="/docs"> Documentation</Link>
+            <Link href="/docs">Documentation</Link>
           </Button>
           <Button asChild variant="outline">
             <Link href="/account">View Orders</Link>
