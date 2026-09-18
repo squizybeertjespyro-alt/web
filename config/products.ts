@@ -18,7 +18,7 @@ export interface Product {
   gameSlug: string;
   shortDescription: string;
   fullDescription: string;
-  status: "Undetected" | "Detected" | "Use at own risk" | "Updating";
+  status: "Undetected" | "Detected" | "Use at own risk" | "Updating" | "Coming soon" | "Beta" | "Alpha";
   onSale: boolean;
   options: ProductOption[];
   isRobux?: boolean; // special flag for Robux product
@@ -52,16 +52,18 @@ export const products: Product[] = [
   slug: "yari-mod-menu-gtav",
   gameSlug: "gtav-cheats",
   shortDescription: "The best GTA V Enhanced mod menu",
-  fullDescription: "Yari is a powerful and feature-rich mod menu for Grand Theft Auto V, built for the latest Enhanced & Expanded editions. It offers advanced GTA V modding features, a powerful Lua API, vehicle and player modifications, custom themes, community file sharing, and BattlEye bypass technology. With regular updates and 24/7 support, Yari delivers a powerful and stable GTA V modding experience.",
-  status: "Undetected",
+  fullDescription: "Coming soon!",
+  //fullDescription: "Yari is a powerful and feature-rich mod menu for Grand Theft Auto V, built for the latest Enhanced & Expanded editions. It offers advanced GTA V modding features, a powerful Lua API, vehicle and player modifications, custom themes, community file sharing, and BattlEye bypass technology. With regular updates and 24/7 support, Yari delivers a powerful and stable GTA V modding experience.",
+  status: "Coming soon",
   onSale: false,
   comingSoon: true,
  options: [
-   { name: "7 Days", price: 6.99, inStock: false },
-   { name: "30 Days", price: 24.99, inStock: false },
-   { name: "60 Days", price: 44.99, inStock: false },
-    { name: "90 Days", price: 59.99, inStock: false },
-    { name: "Lifetime", price: 109.99, inStock: false },
+  { name: "Coming soon!", price: 0.00, inStock: false },
+   //{ name: "7 Days", price: 6.99, inStock: false },
+  // { name: "30 Days", price: 24.99, inStock: false },
+   //{ name: "60 Days", price: 44.99, inStock: false },
+   // { name: "90 Days", price: 59.99, inStock: false },
+   // { name: "Lifetime", price: 109.99, inStock: false },
   ],
   },
   {
@@ -71,14 +73,16 @@ export const products: Product[] = [
     slug: "cherax-mod-menu-gtav",
     gameSlug: "gtav-cheats",
     shortDescription: "The best GTA V mod menu",
-    fullDescription: "Cherax is a powerful and feature-rich mod menu for Grand Theft Auto V. It offers a wide range of features including money drops, vehicle spawning, player modifications, and much more. With regular updates and excellent customer support, Cherax is the go-to choice for GTA V modding.",
-    status: "Undetected",
+    //fullDescription: "Cherax is a powerful and feature-rich mod menu for Grand Theft Auto V. It offers a wide range of features including money drops, vehicle spawning, player modifications, and much more. With regular updates and excellent customer support, Cherax is the go-to choice for GTA V modding.",
+    fullDescription:"Coming soon!",
+    status: "Coming soon",
     onSale: false,
     comingSoon: true,
     options: [
-      { name: "Standard", price: 24.99, inStock: false },
-      { name: "Premium", price: 49.99, inStock: false },
-      { name: "Standard > Premium Upgrade", price: 24.99, inStock: false },
+      { name: "Coming soon!", price: 0.00, inStock: false },
+      //{ name: "Standard", price: 24.99, inStock: false },
+      //{ name: "Premium", price: 49.99, inStock: false },
+      //{ name: "Standard > Premium Upgrade", price: 24.99, inStock: false },
     ],
   },
   {
@@ -156,12 +160,15 @@ export const products: Product[] = [
    slug: "potassium-executor-roblox",
    gameSlug: "roblox-cheats",
    shortDescription: "Powerful Roblox executor with advanced features",
-    fullDescription: "Potassium is a top-tier Roblox executor designed for both beginners and advanced users. It offers a user-friendly interface, high execution speed, and compatibility with a wide range of scripts. With regular updates and excellent customer support, Potassium is the ideal choice for anyone looking to enhance their Roblox experience.",
-    status: "Undetected",
+    fullDescription:"Coming soon!",
+   //fullDescription: "Potassium is a top-tier Roblox executor designed for both beginners and advanced users. It offers a user-friendly interface, high execution speed, and compatibility with a wide range of scripts. With regular updates and excellent customer support, Potassium is the ideal choice for anyone looking to enhance their Roblox experience.",
+   status: "Coming soon", 
+   //status: "Undetected",
     onSale: false,
     comingSoon: true,
     options: [
-     { name: "Lifetime", price: 23.00, inStock: false },
+     { name: "Coming soon!", price: 0.00, inStock: false },
+      //{ name: "Lifetime", price: 23.00, inStock: false },
     ],
   },
 ];
