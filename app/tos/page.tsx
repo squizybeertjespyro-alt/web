@@ -29,8 +29,8 @@ export default function TermsPage() {
             </p>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
               HardDuckMarket operates an online digital distribution platform. We are responsible for payment
-              processing, customer support, delivery coordination, and refund handling for all purchases made
-              on our platform.
+              processing, customer support (for the delivery of the digital products, For support for use please contact the staff of the product), delivery coordination, and refund handling for all purchases made
+              on our platform. 
             </p>
           </section>
 
@@ -44,7 +44,7 @@ export default function TermsPage() {
               </div>
               <div>
                 <span className="font-semibold text-white">2.2 Payment</span>
-                <p className="mt-1">You agree to pay the specified amount for the license key(s) you purchase. Payments are processed securely via cryptocurrency through NOWPayments. Your financial information is not stored on our servers.</p>
+                <p className="mt-1">You agree to pay the specified amount for the license key(s) you purchase. Payments are processed securely via secure methods such as NOWPayments, Stripe or via Discord. Your financial information is not stored on our servers.</p>
               </div>
               <div>
                 <span className="font-semibold text-white">2.3 Delivery</span>
@@ -74,7 +74,7 @@ export default function TermsPage() {
             <div className="space-y-3 text-sm leading-relaxed text-muted-foreground">
               <div>
                 <span className="font-semibold text-white">4.1 Refunds</span>
-                <p className="mt-1">Refund eligibility and processing are governed by our Refund Policy. Refunds are handled directly by HardDuckMarket and may depend on delivery status, product usage, and technical compatibility.</p>
+                <p className="mt-1">Refund eligibility and processing are governed by our Refund Policy. Refunds are handled directly by HardDuckMarket **Staff** and may depend on delivery status, product usage, and technical compatibility.</p>
               </div>
               <div>
                 <span className="font-semibold text-white">4.2 Cancellation</span>
@@ -141,7 +141,7 @@ export default function TermsPage() {
             <div className="space-y-4 text-sm leading-relaxed text-muted-foreground">
               <div>
                 <span className="font-semibold text-white">Site Publisher</span>
-                <p className="mt-1">HardDuckMarket<br />Website: hardduckmarket.xyz<br />Contact: via Discord</p>
+                <p className="mt-1">HardDuckMarket<br />Website: hardduckmarket.xyz<br />Contact: via Discord or Email</p>
               </div>
               
               <div>
