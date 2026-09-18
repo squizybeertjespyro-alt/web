@@ -40,6 +40,14 @@ export const games: Game[] = [
     slug: "roblox-cheats",
     comingSoon: true,
   },
+  {
+    id: "3",
+    name: "Counter-strike 2",
+    image: "/images/cs2.png",
+    slug: "cs2-cheats",
+    comingSoon: true,
+  },
+  
 
   // -------- ADD MORE GAMES BELOW --------
   // Copy the format above and paste here!

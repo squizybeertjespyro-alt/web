@@ -7,6 +7,7 @@ export interface ProductOption {
   price: number;
   salePrice?: number;
   inStock: boolean;
+  comingSoon?: boolean; // Optional: if true, the option will show a "Coming Soon" badge
 }
 
 export interface Product {
@@ -21,6 +22,8 @@ export interface Product {
   onSale: boolean;
   options: ProductOption[];
   isRobux?: boolean; // special flag for Robux product
+  comingSoon?: boolean; // Optional: if true, the product will show a "Coming Soon" badge
+
 }
 
 export const products: Product[] = [
@@ -41,41 +44,43 @@ export const products: Product[] = [
     { name: "Lifetime", price: 4.99, inStock: false },
   ],
   },
-  //{
+  {
   
-  //id: "yari",
-  //name: "Yari",
-  //image: "/images/yari.webp",
-  //slug: "yari-mod-menu-gtav",
-  //gameSlug: "gtav-cheats",
-  //shortDescription: "The best GTA V Enhanced mod menu",
-  //fullDescription: "Yari is a powerful and feature-rich mod menu for Grand Theft Auto V, built for the latest Enhanced & Expanded editions. It offers advanced GTA V modding features, a powerful Lua API, vehicle and player modifications, custom themes, community file sharing, and BattlEye bypass technology. With regular updates and 24/7 support, Yari delivers a powerful and stable GTA V modding experience.",
- // status: "Undetected",
- // onSale: false,
-//  options: [
-//    { name: "7 Days", price: 6.99, inStock: false },
-//    { name: "30 Days", price: 24.99, inStock: false },
-//    { name: "60 Days", price: 44.99, inStock: false },
-//    { name: "90 Days", price: 59.99, inStock: false },
-//    { name: "Lifetime", price: 109.99, inStock: false },
-//  ],
-//  },
-  //{
-    //id: "cherax",
-   // name: "Cherax",
-   // image: "/images/cherax.png",
-    //slug: "cherax-mod-menu-gtav",
-    //gameSlug: "gtav-cheats",
-    //shortDescription: "The best GTA V mod menu",
-    //fullDescription: "Cherax is a powerful and feature-rich mod menu for Grand Theft Auto V. It offers a wide range of features including money drops, vehicle spawning, player modifications, and much more. With regular updates and excellent customer support, Cherax is the go-to choice for GTA V modding.",
-    //status: "Undetected",
-    //onSale: false,
-    //options: [
-     /// { name: "Standard", price: 24.99, inStock: false },
-     // { name: "Premium", price: 49.99, inStock: false },
-     // { name: "Standard > Premium Upgrade", price: 24.99, inStock: false },
-   // ],
- // },
+  id: "yari",
+  name: "Yari",
+  image: "/images/yari.webp",
+  slug: "yari-mod-menu-gtav",
+  gameSlug: "gtav-cheats",
+  shortDescription: "The best GTA V Enhanced mod menu",
+  fullDescription: "Yari is a powerful and feature-rich mod menu for Grand Theft Auto V, built for the latest Enhanced & Expanded editions. It offers advanced GTA V modding features, a powerful Lua API, vehicle and player modifications, custom themes, community file sharing, and BattlEye bypass technology. With regular updates and 24/7 support, Yari delivers a powerful and stable GTA V modding experience.",
+  status: "Undetected",
+  onSale: false,
+  comingSoon: true,
+ options: [
+   { name: "7 Days", price: 6.99, inStock: false },
+   { name: "30 Days", price: 24.99, inStock: false },
+   { name: "60 Days", price: 44.99, inStock: false },
+    { name: "90 Days", price: 59.99, inStock: false },
+    { name: "Lifetime", price: 109.99, inStock: false },
+  ],
+  },
+  {
+    id: "cherax",
+    name: "Cherax",
+    image: "/images/cherax.png",
+    slug: "cherax-mod-menu-gtav",
+    gameSlug: "gtav-cheats",
+    shortDescription: "The best GTA V mod menu",
+    fullDescription: "Cherax is a powerful and feature-rich mod menu for Grand Theft Auto V. It offers a wide range of features including money drops, vehicle spawning, player modifications, and much more. With regular updates and excellent customer support, Cherax is the go-to choice for GTA V modding.",
+    status: "Undetected",
+    onSale: false,
+    comingSoon: true,
+    options: [
+      { name: "Standard", price: 24.99, inStock: false },
+      { name: "Premium", price: 49.99, inStock: false },
+      { name: "Standard > Premium Upgrade", price: 24.99, inStock: false },
+    ],
+  },
   {
     id: "stand",
     name: "Stand",
@@ -144,20 +149,21 @@ export const products: Product[] = [
    //   { name: "Lifetime", price: 48.99, inStock: true },
    // ],
  // },
-  //{
-  //  id: "potassium",
-   // name: "Potassium",
-   // image: "/images/potassium.png",
-   // slug: "potassium-executor-roblox",
-   // gameSlug: "roblox-cheats",
-   // shortDescription: "Powerful Roblox executor with advanced features",
-   // fullDescription: "Potassium is a top-tier Roblox executor designed for both beginners and advanced users. It offers a user-friendly interface, high execution speed, and compatibility with a wide range of scripts. With regular updates and excellent customer support, Potassium is the ideal choice for anyone looking to enhance their Roblox experience.",
-   // status: "Undetected",
-   // onSale: false,
-   // options: [
-   //   { name: "Lifetime", price: 23.00, inStock: false },
-   // ],
- // },
+  {
+    id: "potassium",
+   name: "Potassium",
+  image: "/images/potassium.png",
+   slug: "potassium-executor-roblox",
+   gameSlug: "roblox-cheats",
+   shortDescription: "Powerful Roblox executor with advanced features",
+    fullDescription: "Potassium is a top-tier Roblox executor designed for both beginners and advanced users. It offers a user-friendly interface, high execution speed, and compatibility with a wide range of scripts. With regular updates and excellent customer support, Potassium is the ideal choice for anyone looking to enhance their Roblox experience.",
+    status: "Undetected",
+    onSale: false,
+    comingSoon: true,
+    options: [
+     { name: "Lifetime", price: 23.00, inStock: false },
+    ],
+  },
 ];
 
 export function getProductsByGame(gameSlug: string): Product[] {
