@@ -14,6 +14,8 @@ export function ProductCard({ game }: ProductCardProps) {
   const [inStock, setInStock] = useState<boolean | null>(null);
 
   useEffect(() => {
+    if (game.comingSoon) return; // skip stock check for coming soon games
+
     const gameProducts = products.filter((p) => p.gameSlug === game.slug);
     if (gameProducts.length === 0) return;
 
@@ -35,7 +37,7 @@ export function ProductCard({ game }: ProductCardProps) {
     };
 
     checkStock();
-  }, [game.slug]);
+  }, [game.slug, game.comingSoon]);
 
   return (
     <Link
@@ -52,16 +54,20 @@ export function ProductCard({ game }: ProductCardProps) {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
-        {/* Stock badge */}
-        {inStock !== null && (
+        {/* Badge */}
+        {game.comingSoon ? (
+          <div className="absolute top-2 right-2 rounded-full px-2 py-0.5 text-[10px] font-bold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+            Coming Soon
+          </div>
+        ) : inStock !== null ? (
           <div className={`absolute top-2 right-2 rounded-full px-2 py-0.5 text-[10px] font-bold ${
             inStock
               ? "bg-green-500/20 text-green-400 border border-green-500/30"
-              : "bg-red-500/20 text-red-400 border border-red-500/30"
+              : "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
           }`}>
-            {inStock ? "In Stock" : "Out of Stock"}
+            {inStock ? "In Stock" : "Stock Soon"}
           </div>
-        )}
+        ) : null}
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 p-3">

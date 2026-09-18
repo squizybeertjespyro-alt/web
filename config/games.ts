@@ -20,6 +20,7 @@ export interface Game {
   name: string;
   image: string;
   slug: string;
+  comingSoon?: boolean; // Optional: if true, the game will show a "Coming Soon" badge
 }
 
 export const games: Game[] = [
@@ -37,6 +38,7 @@ export const games: Game[] = [
     name: "Roblox",
     image: "/images/roblox.png",
     slug: "roblox-cheats",
+    comingSoon: true,
   },
 
   // -------- ADD MORE GAMES BELOW --------
