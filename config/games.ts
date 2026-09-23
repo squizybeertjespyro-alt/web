@@ -48,7 +48,7 @@ export const games: Game[] = [
     comingSoon: true,
   },
   
-
+  // added some thing for meau in the future like payouts etc
   // -------- ADD MORE GAMES BELOW --------
   // Copy the format above and paste here!
 ];
