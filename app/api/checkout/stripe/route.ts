@@ -7,7 +7,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(req: NextRequest) {
   try {
-    const { items, email } = await req.json();
+    const { items, email, promoCode, discountedTotal } = await req.json();
 
     if (!items?.length) {
       return NextResponse.json({ error: "No items in cart" }, { status: 400 });
@@ -20,11 +20,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Email required" }, { status: 400 });
     }
 
-    const total = items.reduce(
-      (sum: number, item: { price: number; quantity: number }) =>
-        sum + item.price * item.quantity,
-      0
+    const originalTotal = items.reduce(
+      (sum: number, item: { price: number; quantity: number }) => sum + item.price * item.quantity, 0
     );
+
+    const total = discountedTotal ?? originalTotal;
+
+    // Increment promo usage if code was used
+    if (promoCode) {
+      await prisma.promoCode.update({
+        where: { code: promoCode },
+        data: { uses: { increment: 1 } },
+      }).catch(() => {});
+    }
 
     const order = await prisma.order.create({
       data: {
@@ -54,10 +62,7 @@ export async function POST(req: NextRequest) {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(total * 100),
       currency: "eur",
-      metadata: {
-        orderId: order.id,
-        customerEmail,
-      },
+      metadata: { orderId: order.id, customerEmail },
       receipt_email: customerEmail,
     });
 
@@ -66,10 +71,7 @@ export async function POST(req: NextRequest) {
       data: { paymentId: paymentIntent.id },
     });
 
-    return NextResponse.json({
-      clientSecret: paymentIntent.client_secret,
-      orderId: order.id,
-    });
+    return NextResponse.json({ clientSecret: paymentIntent.client_secret, orderId: order.id });
   } catch (error) {
     console.error("Stripe checkout error:", error);
     return NextResponse.json({ error: "Checkout failed" }, { status: 500 });

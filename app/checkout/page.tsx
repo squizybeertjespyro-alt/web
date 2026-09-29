@@ -10,10 +10,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { siteConfig } from "@/config/site";
 import Link from "next/link";
-import { ShoppingBag, Bitcoin, Lock, MessageCircle, CreditCard } from "lucide-react";
+import { ShoppingBag, Bitcoin, Lock, MessageCircle, CreditCard, Tag, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 type PayMethod = "card" | "crypto" | "discord";
+
+interface PromoResult {
+  code: string;
+  type: string;
+  value: number;
+  discount: number;
+  newTotal: number;
+}
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
@@ -24,6 +32,13 @@ export default function CheckoutPage() {
   const [payMethod, setPayMethod] = useState<PayMethod>("card");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const [promoInput, setPromoInput] = useState("");
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoError, setPromoError] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<PromoResult | null>(null);
+
+  const finalTotal = appliedPromo ? appliedPromo.newTotal : total;
 
   if (!items.length) {
     return (
@@ -38,6 +53,32 @@ export default function CheckoutPage() {
       </div>
     );
   }
+
+  const handleApplyPromo = async () => {
+    if (!promoInput.trim()) return;
+    setPromoLoading(true);
+    setPromoError("");
+    try {
+      const res = await fetch("/api/promo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: promoInput.trim(), total }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setAppliedPromo(data);
+      setPromoInput("");
+    } catch (err: unknown) {
+      setPromoError(err instanceof Error ? err.message : "Invalid code");
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setAppliedPromo(null);
+    setPromoError("");
+  };
 
   const handleCheckout = async () => {
     setError("");
@@ -55,7 +96,12 @@ export default function CheckoutPage() {
         const res = await fetch("/api/checkout/stripe", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ items, email: user?.email ?? email }),
+          body: JSON.stringify({
+            items,
+            email: user?.email ?? email,
+            promoCode: appliedPromo?.code,
+            discountedTotal: finalTotal,
+          }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
@@ -66,7 +112,12 @@ export default function CheckoutPage() {
         const res = await fetch("/api/checkout/crypto", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ items, email: user?.email ?? email }),
+          body: JSON.stringify({
+            items,
+            email: user?.email ?? email,
+            promoCode: appliedPromo?.code,
+            discountedTotal: finalTotal,
+          }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
@@ -101,13 +152,8 @@ export default function CheckoutPage() {
                 ) : (
                   <div className="space-y-2">
                     <Label htmlFor="email">Email address</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
+                    <Input id="email" type="email" placeholder="you@example.com" value={email}
+                      onChange={(e) => setEmail(e.target.value)} />
                     <p className="text-xs text-muted-foreground">
                       Your order confirmation and license key will be sent here.{" "}
                       <Link href="/login" className="text-primary underline">Have an account?</Link>
@@ -121,14 +167,10 @@ export default function CheckoutPage() {
             <div className="rounded-xl border border-border bg-card p-6">
               <h2 className="mb-4 text-base font-semibold">Payment Method</h2>
               <div className="grid grid-cols-3 gap-3">
-                <button
-                  onClick={() => setPayMethod("card")}
+                <button onClick={() => setPayMethod("card")}
                   className={`flex flex-col items-center gap-2 rounded-lg border p-4 text-center transition-colors ${
-                    payMethod === "card"
-                      ? "border-primary bg-primary/10"
-                      : "border-border hover:border-primary/50"
-                  }`}
-                >
+                    payMethod === "card" ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"
+                  }`}>
                   <CreditCard className="h-5 w-5 text-primary" />
                   <div>
                     <p className="text-sm font-medium">Card</p>
@@ -136,14 +178,10 @@ export default function CheckoutPage() {
                   </div>
                 </button>
 
-                <button
-                  onClick={() => setPayMethod("crypto")}
+                <button onClick={() => setPayMethod("crypto")}
                   className={`flex flex-col items-center gap-2 rounded-lg border p-4 text-center transition-colors ${
-                    payMethod === "crypto"
-                      ? "border-primary bg-primary/10"
-                      : "border-border hover:border-primary/50"
-                  }`}
-                >
+                    payMethod === "crypto" ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"
+                  }`}>
                   <Bitcoin className="h-5 w-5 text-primary" />
                   <div>
                     <p className="text-sm font-medium">Crypto</p>
@@ -151,14 +189,10 @@ export default function CheckoutPage() {
                   </div>
                 </button>
 
-                <button
-                  onClick={() => setPayMethod("discord")}
+                <button onClick={() => setPayMethod("discord")}
                   className={`flex flex-col items-center gap-2 rounded-lg border p-4 text-center transition-colors ${
-                    payMethod === "discord"
-                      ? "border-primary bg-primary/10"
-                      : "border-border hover:border-primary/50"
-                  }`}
-                >
+                    payMethod === "discord" ? "border-primary bg-primary/10" : "border-border hover:border-primary/50"
+                  }`}>
                   <MessageCircle className="h-5 w-5 text-primary" />
                   <div>
                     <p className="text-sm font-medium">PayPal</p>
@@ -167,38 +201,21 @@ export default function CheckoutPage() {
                 </button>
               </div>
 
-              {payMethod === "card" && (
-                <p className="mt-3 text-xs text-muted-foreground">
-                  Pay securely with your card, Apple Pay or Google Pay via Stripe.
-                </p>
-              )}
-              {payMethod === "crypto" && (
-                <p className="mt-3 text-xs text-muted-foreground">
-                  You'll be redirected to NOWPayments to complete your payment securely.
-                </p>
-              )}
-              {payMethod === "discord" && (
-                <p className="mt-3 text-xs text-muted-foreground">
-                  You'll be redirected to our Discord. Open a ticket and we'll process your PayPal payment manually.
-                </p>
-              )}
+              {payMethod === "card" && <p className="mt-3 text-xs text-muted-foreground">Pay securely with your card, Apple Pay or Google Pay via Stripe.</p>}
+              {payMethod === "crypto" && <p className="mt-3 text-xs text-muted-foreground">You'll be redirected to NOWPayments to complete your payment securely.</p>}
+              {payMethod === "discord" && <p className="mt-3 text-xs text-muted-foreground">You'll be redirected to our Discord. Open a ticket and we'll process your PayPal payment manually.</p>}
             </div>
 
             {error && (
-              <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive">
-                {error}
-              </div>
+              <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive">{error}</div>
             )}
 
             <Button onClick={handleCheckout} disabled={loading} size="lg" className="w-full">
               <Lock className="mr-2 h-4 w-4" />
-              {loading
-                ? "Processing…"
-                : payMethod === "discord"
-                ? "Continue to Discord"
-                : payMethod === "crypto"
-                ? `Pay with Crypto — ${siteConfig.currency}${total.toFixed(2)}`
-                : `Continue to Payment — ${siteConfig.currency}${total.toFixed(2)}`}
+              {loading ? "Processing…"
+                : payMethod === "discord" ? "Continue to Discord"
+                : payMethod === "crypto" ? `Pay with Crypto — ${siteConfig.currency}${finalTotal.toFixed(2)}`
+                : `Continue to Payment — ${siteConfig.currency}${finalTotal.toFixed(2)}`}
             </Button>
           </div>
 
@@ -208,16 +225,59 @@ export default function CheckoutPage() {
             <div className="space-y-3">
               {items.map((item) => (
                 <div key={`${item.productId}-${item.optionName}`} className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    {item.productName} ({item.optionName}) × {item.quantity}
-                  </span>
+                  <span className="text-muted-foreground">{item.productName} ({item.optionName}) × {item.quantity}</span>
                   <span>{siteConfig.currency}{(item.price * item.quantity).toFixed(2)}</span>
                 </div>
               ))}
             </div>
-            <div className="my-4 border-t border-border pt-4 flex justify-between font-bold">
-              <span>Total</span>
-              <span className="text-primary">{siteConfig.currency}{total.toFixed(2)}</span>
+
+            {/* Promo code */}
+            <div className="mt-4 space-y-2">
+              {appliedPromo ? (
+                <div className="flex items-center justify-between rounded-lg border border-green-500/30 bg-green-500/10 px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <Tag className="h-3.5 w-3.5 text-green-400" />
+                    <span className="text-xs font-mono font-bold text-green-400">{appliedPromo.code}</span>
+                    <span className="text-xs text-green-400">
+                      -{appliedPromo.type === "percent" ? `${appliedPromo.value}%` : `${siteConfig.currency}${appliedPromo.value}`}
+                    </span>
+                  </div>
+                  <button onClick={handleRemovePromo} className="text-green-400 hover:text-green-300">
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Promo code"
+                    value={promoInput}
+                    onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
+                    onKeyDown={(e) => e.key === "Enter" && handleApplyPromo()}
+                    className="h-9 text-sm font-mono"
+                  />
+                  <Button size="sm" variant="outline" onClick={handleApplyPromo} disabled={promoLoading} className="h-9 px-3">
+                    {promoLoading ? "..." : "Apply"}
+                  </Button>
+                </div>
+              )}
+              {promoError && <p className="text-xs text-destructive">{promoError}</p>}
+            </div>
+
+            <div className="mt-4 border-t border-border pt-4 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span>{siteConfig.currency}{total.toFixed(2)}</span>
+              </div>
+              {appliedPromo && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-green-400">Discount</span>
+                  <span className="text-green-400">-{siteConfig.currency}{appliedPromo.discount.toFixed(2)}</span>
+                </div>
+              )}
+              <div className="flex justify-between font-bold text-base pt-1 border-t border-border">
+                <span>Total</span>
+                <span className="text-primary">{siteConfig.currency}{finalTotal.toFixed(2)}</span>
+              </div>
             </div>
           </div>
         </div>

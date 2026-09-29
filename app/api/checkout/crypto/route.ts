@@ -4,7 +4,7 @@ import { getUser } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
-    const { items, email } = await req.json();
+    const { items, email, promoCode, discountedTotal } = await req.json();
 
     if (!items?.length) {
       return NextResponse.json({ error: "No items in cart" }, { status: 400 });
@@ -17,13 +17,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Email required" }, { status: 400 });
     }
 
-    const total = items.reduce(
-      (sum: number, item: { price: number; quantity: number }) =>
-        sum + item.price * item.quantity,
-      0
+    const originalTotal = items.reduce(
+      (sum: number, item: { price: number; quantity: number }) => sum + item.price * item.quantity, 0
     );
 
-    // Save order to database
+    const total = discountedTotal ?? originalTotal;
+
+    if (promoCode) {
+      await prisma.promoCode.update({
+        where: { code: promoCode },
+        data: { uses: { increment: 1 } },
+      }).catch(() => {});
+    }
+
     const order = await prisma.order.create({
       data: {
         userId: user?.id ?? null,
@@ -51,7 +57,6 @@ export async function POST(req: NextRequest) {
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://hardduckmarket.xyz";
 
-    // Create NOWPayments invoice
     const response = await fetch("https://api.nowpayments.io/v1/invoice", {
       method: "POST",
       headers: {
@@ -62,9 +67,7 @@ export async function POST(req: NextRequest) {
         price_amount: total,
         price_currency: "usd",
         order_id: order.id,
-        order_description: items
-          .map((i: { productName: string; optionName: string }) => `${i.productName} (${i.optionName})`)
-          .join(", "),
+        order_description: items.map((i: { productName: string; optionName: string }) => `${i.productName} (${i.optionName})`).join(", "),
         ipn_callback_url: `${baseUrl}/api/webhooks/nowpayments`,
         success_url: `${baseUrl}/order-success?orderId=${order.id}`,
         cancel_url: `${baseUrl}/cart`,
@@ -73,22 +76,14 @@ export async function POST(req: NextRequest) {
     });
 
     const data = await response.json();
+    if (!response.ok) throw new Error(data.message ?? "NOWPayments error");
 
-    if (!response.ok) {
-      console.error("NOWPayments error:", data);
-      throw new Error(data.message ?? "NOWPayments error");
-    }
-
-    // Save payment ID
     await prisma.order.update({
       where: { id: order.id },
       data: { paymentId: data.id },
     });
 
-    return NextResponse.json({
-      hostedUrl: data.invoice_url,
-      orderId: order.id,
-    });
+    return NextResponse.json({ hostedUrl: data.invoice_url, orderId: order.id });
   } catch (error) {
     console.error("Crypto checkout error:", error);
     return NextResponse.json({ error: "Checkout failed" }, { status: 500 });
