@@ -73,3 +73,14 @@ model NewsletterSubscriber {
   email     String   @unique
   createdAt DateTime @default(now())
 }
+model PromoCode {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  type        String   // "percent" or "fixed"
+  value       Float    // e.g. 10 for 10% or €10 off
+  maxUses     Int?     // null = unlimited
+  uses        Int      @default(0)
+  expiresAt   DateTime?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
