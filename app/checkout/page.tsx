@@ -107,6 +107,7 @@ export default function CheckoutPage() {
         if (!res.ok) throw new Error(data.error);
         sessionStorage.setItem("stripe_client_secret", data.clientSecret);
         sessionStorage.setItem("pending_order_id", data.orderId);
+        sessionStorage.setItem("stripe_total", finalTotal.toFixed(2));
         router.push("/checkout/payment");
       } else {
         const res = await fetch("/api/checkout/crypto", {

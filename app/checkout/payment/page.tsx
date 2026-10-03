@@ -31,7 +31,13 @@ interface StripeElement {
 
 export default function PaymentPage() {
   const router = useRouter();
-  const { total, clearCart } = useCart();
+  const { clearCart } = useCart();
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+  const storedTotal = sessionStorage.getItem("stripe_total");
+  if (storedTotal) setTotal(parseFloat(storedTotal));
+  }, []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [ready, setReady] = useState(false);
