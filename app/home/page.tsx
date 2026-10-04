@@ -55,7 +55,7 @@ export default function HomePage() {
               <span className="text-primary">Digital Key Store</span>
             </h1>
             <p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground">
-              Premium license keys delivered instantly to your inbox. Cheap prices, reliable stock, and 24/7 support — everything you need in one place.
+              Premium license keys delivered instantly to your inbox. Cheap prices, and 24/7 support — everything you need in one place.
             </p>
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
               <Button asChild size="lg" className="h-12 px-8 text-base">
