@@ -1,33 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUser } from "@/lib/auth";
+import { priceCart, redeemPromo, isValidEmail, CheckoutError } from "@/lib/pricing";
 
 export async function POST(req: NextRequest) {
   try {
-    const { items, email, promoCode, discountedTotal } = await req.json();
-
-    if (!items?.length) {
-      return NextResponse.json({ error: "No items in cart" }, { status: 400 });
-    }
+    // Only item identity + quantity + promo code are read from the client.
+    // Any price / discountedTotal sent by the browser is ignored.
+    const { items, email, promoCode } = await req.json();
 
     const user = await getUser();
     const customerEmail = user?.email ?? email;
-
-    if (!customerEmail) {
-      return NextResponse.json({ error: "Email required" }, { status: 400 });
+    if (!isValidEmail(customerEmail)) {
+      return NextResponse.json({ error: "A valid email is required" }, { status: 400 });
     }
 
-    const originalTotal = items.reduce(
-      (sum: number, item: { price: number; quantity: number }) => sum + item.price * item.quantity, 0
-    );
+    const cart = await priceCart(items, promoCode);
 
-    const total = discountedTotal ?? originalTotal;
+    if (cart.total <= 0) {
+      return NextResponse.json({ error: "Order total is too low to process" }, { status: 400 });
+    }
 
-    if (promoCode) {
-      await prisma.promoCode.update({
-        where: { code: promoCode },
-        data: { uses: { increment: 1 } },
-      }).catch(() => {});
+    if (cart.promoCode && !(await redeemPromo(cart.promoCode))) {
+      return NextResponse.json({ error: "This promo code is no longer available" }, { status: 400 });
     }
 
     const order = await prisma.order.create({
@@ -36,15 +31,9 @@ export async function POST(req: NextRequest) {
         guestEmail: user ? null : customerEmail,
         status: "pending",
         paymentMethod: "crypto",
-        total,
+        total: cart.total,
         items: {
-          create: items.map((item: {
-            productId: string;
-            productName: string;
-            optionName: string;
-            quantity: number;
-            price: number;
-          }) => ({
+          create: cart.items.map((item) => ({
             productId: item.productId,
             productName: item.productName,
             optionName: item.optionName,
@@ -64,10 +53,10 @@ export async function POST(req: NextRequest) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        price_amount: total,
+        price_amount: cart.total,
         price_currency: "usd",
         order_id: order.id,
-        order_description: items.map((i: { productName: string; optionName: string }) => `${i.productName} (${i.optionName})`).join(", "),
+        order_description: cart.items.map((i) => `${i.productName} (${i.optionName})`).join(", "),
         ipn_callback_url: `${baseUrl}/api/webhooks/nowpayments`,
         success_url: `${baseUrl}/order-success?orderId=${order.id}`,
         cancel_url: `${baseUrl}/cart`,
@@ -80,11 +69,14 @@ export async function POST(req: NextRequest) {
 
     await prisma.order.update({
       where: { id: order.id },
-      data: { paymentId: data.id },
+      data: { paymentId: String(data.id) },
     });
 
-    return NextResponse.json({ hostedUrl: data.invoice_url, orderId: order.id });
+    return NextResponse.json({ hostedUrl: data.invoice_url, orderId: order.id, total: cart.total });
   } catch (error) {
+    if (error instanceof CheckoutError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     console.error("Crypto checkout error:", error);
     return NextResponse.json({ error: "Checkout failed" }, { status: 500 });
   }

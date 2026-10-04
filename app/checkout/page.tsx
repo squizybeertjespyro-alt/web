@@ -62,7 +62,7 @@ export default function CheckoutPage() {
       const res = await fetch("/api/promo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: promoInput.trim(), total }),
+        body: JSON.stringify({ code: promoInput.trim(), items }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -100,14 +100,13 @@ export default function CheckoutPage() {
             items,
             email: user?.email ?? email,
             promoCode: appliedPromo?.code,
-            discountedTotal: finalTotal,
           }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
         sessionStorage.setItem("stripe_client_secret", data.clientSecret);
         sessionStorage.setItem("pending_order_id", data.orderId);
-        sessionStorage.setItem("stripe_total", finalTotal.toFixed(2));
+        sessionStorage.setItem("stripe_total", Number(data.total).toFixed(2));
         router.push("/checkout/payment");
       } else {
         const res = await fetch("/api/checkout/crypto", {
@@ -117,7 +116,6 @@ export default function CheckoutPage() {
             items,
             email: user?.email ?? email,
             promoCode: appliedPromo?.code,
-            discountedTotal: finalTotal,
           }),
         });
         const data = await res.json();

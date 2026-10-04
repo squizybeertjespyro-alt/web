@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
-import { sendOrderConfirmationEmail } from "@/lib/email";
-import { sendOrderNotification } from "@/lib/discord";
+import { fulfillOrder } from "@/lib/fulfillment";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
-  const sig = req.headers.get("stripe-signature")!;
+  const sig = req.headers.get("stripe-signature");
+
+  if (!sig) {
+    return NextResponse.json({ error: "Missing signature" }, { status: 400 });
+  }
 
   let event: Stripe.Event;
   try {
@@ -21,75 +24,31 @@ export async function POST(req: NextRequest) {
   if (event.type === "payment_intent.succeeded") {
     const intent = event.data.object as Stripe.PaymentIntent;
     const orderId = intent.metadata.orderId;
-    const customerEmail = intent.metadata.customerEmail;
+    if (!orderId) return NextResponse.json({ received: true });
 
-    const order = await prisma.order.findUnique({
-      where: { id: orderId },
-      include: { items: true, user: true },
-    });
-
+    const order = await prisma.order.findUnique({ where: { id: orderId } });
     if (!order) return NextResponse.json({ received: true });
 
-    // Assign license keys
-    const assignedKeys: { productName: string; optionName: string; keys: string[] }[] = [];
-
-    for (const item of order.items) {
-      const keys: string[] = [];
-      for (let i = 0; i < item.quantity; i++) {
-        const licenseKey = await prisma.licenseKey.findFirst({
-          where: { productId: item.productId, optionName: item.optionName, used: false },
-        });
-        if (licenseKey) {
-          await prisma.licenseKey.update({
-            where: { id: licenseKey.id },
-            data: { used: true, usedAt: new Date(), orderItemId: item.id },
-          });
-          keys.push(licenseKey.key);
-        } else {
-          keys.push("NO KEY AVAILABLE - Contact support on Discord");
-        }
-      }
-      assignedKeys.push({ productName: item.productName, optionName: item.optionName, keys });
+    // The payment must be the one we created for this order...
+    if (order.paymentMethod !== "stripe" || order.paymentId !== intent.id) {
+      console.error(`PaymentIntent ${intent.id} does not belong to order ${orderId}`);
+      return NextResponse.json({ received: true });
     }
 
-    const productContent = assignedKeys
-      .map((p) => `${p.productName} — ${p.optionName}:\n${p.keys.join("\n")}`)
-      .join("\n\n");
-
-    await prisma.order.update({
-      where: { id: orderId },
-      data: { status: "paid" },
-    });
-
-    if (!order.emailSent && customerEmail) {
-      try {
-        await sendOrderConfirmationEmail({
-          to: customerEmail,
-          orderId: order.id,
-          items: order.items,
-          total: order.total,
-          productContent,
-        });
-        await prisma.order.update({
-          where: { id: orderId },
-          data: { emailSent: true },
-        });
-        await sendOrderNotification({
-          orderId: order.id,
-          customerEmail,
-          items: order.items,
-          total: order.total,
-        });
-      } catch (emailErr) {
-        console.error("Email failed:", emailErr);
-      }
+    // ...and must cover the full price of the order.
+    if (intent.amount_received < Math.round(order.total * 100)) {
+      console.error(`Underpaid order ${orderId}: received ${intent.amount_received}, expected ${Math.round(order.total * 100)}`);
+      return NextResponse.json({ received: true });
     }
+
+    await fulfillOrder(order.id, intent.metadata.customerEmail);
   }
 
   if (event.type === "payment_intent.payment_failed") {
     const intent = event.data.object as Stripe.PaymentIntent;
+    // Never downgrade an order that's already paid
     await prisma.order.updateMany({
-      where: { paymentId: intent.id },
+      where: { paymentId: intent.id, status: { not: "paid" } },
       data: { status: "failed" },
     });
   }
