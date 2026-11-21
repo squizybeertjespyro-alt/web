@@ -84,7 +84,7 @@ export default function CheckoutPage() {
     setError("");
 
     if (payMethod === "discord") {
-      window.open(`https://discord.gg/23f7bKkXKM`, "_blank");
+      window.open(`https://discord.gg/StD5bzsYHt`, "_blank");
       return;
     }
 
