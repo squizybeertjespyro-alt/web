@@ -285,7 +285,7 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-background text-foreground p-8">
       <div className="mx-auto max-w-4xl space-y-8">
-        <h1 className="text-2xl font-bold">🔑 Admin Panel</h1>
+        <h1 className="text-2xl font-bold"> Admin Panel</h1>
 
         {/* Stock */}
         <div className="cyber-card">
@@ -326,7 +326,7 @@ export default function AdminPage() {
         {/* Promo codes */}
         <div className="cyber-card space-y-4" style={{ border: "1px solid rgba(160,0,255,0.5)" }}>
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">🏷️ Promo Codes</h2>
+            <h2 className="text-lg font-semibold"> Promo Codes</h2>
             <Button size="sm" onClick={() => fetchPromoCodes(adminKey)} disabled={promoLoading}>
               {promoLoading ? "Loading..." : promoLoaded ? "Refresh" : "Load Codes"}
             </Button>
@@ -406,7 +406,7 @@ export default function AdminPage() {
         {/* Newsletter */}
         <div className="cyber-card space-y-4" style={{ border: "1px solid rgba(160,0,255,0.5)" }}>
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">📧 Newsletter Subscribers</h2>
+            <h2 className="text-lg font-semibold"> Newsletter Subscribers</h2>
             <div className="flex gap-2">
               {subsLoaded && subscribers.length > 0 && (
                 <Button size="sm" variant="outline" onClick={copyAllEmails}>Copy All</Button>
@@ -432,7 +432,7 @@ export default function AdminPage() {
 
         {/* Test email */}
         <div className="cyber-card space-y-4" style={{ border: "1px solid rgba(160,0,255,0.5)" }}>
-          <h2 className="text-lg font-semibold">🧪 Send Test Email</h2>
+          <h2 className="text-lg font-semibold"> Send Test Email</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>Product</Label>
@@ -458,7 +458,7 @@ export default function AdminPage() {
 
         {/* Fulfill */}
         <div className="cyber-card space-y-4">
-          <h2 className="text-lg font-semibold">⚡ Manually Fulfill Order</h2>
+          <h2 className="text-lg font-semibold"> Manually Fulfill Order</h2>
           <Input placeholder="Order ID" value={fulfillOrderId} onChange={(e) => setFulfillOrderId(e.target.value)} />
           {fulfillMessage && <p className="text-sm" style={{ color: fulfillMessage.startsWith("✅") ? "#4ade80" : "#f87171" }}>{fulfillMessage}</p>}
           <Button onClick={handleFulfill} disabled={fulfillLoading} variant="outline" className="w-full">
@@ -468,7 +468,7 @@ export default function AdminPage() {
 
         {/* Broadcast */}
         <div className="cyber-card space-y-4" style={{ border: "1px solid rgba(160,0,255,0.5)" }}>
-          <h2 className="text-lg font-semibold">📢 Broadcast Email</h2>
+          <h2 className="text-lg font-semibold"> Broadcast Email</h2>
           <div className="space-y-2">
             <Label>Send from</Label>
             <select className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"

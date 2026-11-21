@@ -84,7 +84,7 @@ export default function CheckoutPage() {
     setError("");
 
     if (payMethod === "discord") {
-      window.open(`https://discord.gg/hardduckmarket`, "_blank");
+      window.open(`https://discord.gg/23f7bKkXKM`, "_blank");
       return;
     }
 
